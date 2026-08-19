@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/gin-gonic/gin"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

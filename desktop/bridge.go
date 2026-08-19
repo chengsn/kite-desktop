@@ -11,8 +11,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/gin-gonic/gin"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )

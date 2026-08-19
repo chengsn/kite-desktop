@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 )

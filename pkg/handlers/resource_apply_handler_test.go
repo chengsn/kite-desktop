@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 )
 
 type applyLookupClient struct {

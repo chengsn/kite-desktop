@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/model"
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/model"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/gin-gonic/gin"
 )
 

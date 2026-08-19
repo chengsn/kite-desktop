@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 )
 

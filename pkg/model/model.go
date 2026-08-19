@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"

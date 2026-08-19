@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

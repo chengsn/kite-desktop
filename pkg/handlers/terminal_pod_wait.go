@@ -9,9 +9,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/utils"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/utils"
 )
 
 type terminalPodReadyMessages struct {

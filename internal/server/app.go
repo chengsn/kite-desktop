@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/eryajf/kite-desktop/internal"
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/handlers"
-	"github.com/eryajf/kite-desktop/pkg/middleware"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/internal"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/handlers"
+	"github.com/chengsn/kite-desktop/pkg/middleware"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"k8s.io/klog/v2"

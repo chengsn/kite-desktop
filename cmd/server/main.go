@@ -6,7 +6,7 @@ import (
 
 	_ "net/http/pprof"
 
-	appserver "github.com/eryajf/kite-desktop/internal/server"
+	appserver "github.com/chengsn/kite-desktop/internal/server"
 	"k8s.io/klog/v2"
 )
 

@@ -12,8 +12,8 @@ import (
 	"time"
 
 	semver "github.com/blang/semver/v4"
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	corev1 "k8s.io/api/core/v1"

@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

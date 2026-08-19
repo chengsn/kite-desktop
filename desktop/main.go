@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	appserver "github.com/eryajf/kite-desktop/internal/server"
-	"github.com/eryajf/kite-desktop/pkg/common"
+	appserver "github.com/chengsn/kite-desktop/internal/server"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

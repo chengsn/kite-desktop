@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/handlers/resources"
-	"github.com/eryajf/kite-desktop/pkg/middleware"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/handlers/resources"
+	"github.com/chengsn/kite-desktop/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 

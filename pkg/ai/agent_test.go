@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
 )
 
 func TestNormalizeChatMessages(t *testing.T) {

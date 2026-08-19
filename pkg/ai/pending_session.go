@@ -7,7 +7,7 @@ import (
 	"time"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/openai/openai-go"
 	"k8s.io/klog/v2"
 )

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/utils"
+	"github.com/chengsn/kite-desktop/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"k8s.io/klog/v2"
 )

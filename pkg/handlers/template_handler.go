@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/gin-gonic/gin"
 )
 

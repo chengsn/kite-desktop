@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

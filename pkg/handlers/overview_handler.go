@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/utils"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"

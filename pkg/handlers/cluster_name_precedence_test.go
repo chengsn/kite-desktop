@@ -3,7 +3,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/middleware"
+	"github.com/chengsn/kite-desktop/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 

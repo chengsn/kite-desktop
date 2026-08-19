@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/kube"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"

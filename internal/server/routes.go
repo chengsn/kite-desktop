@@ -3,12 +3,12 @@ package server
 import (
 	"net/http"
 
-	"github.com/eryajf/kite-desktop/pkg/ai"
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/handlers"
-	"github.com/eryajf/kite-desktop/pkg/handlers/resources"
-	"github.com/eryajf/kite-desktop/pkg/middleware"
-	"github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/ai"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/handlers"
+	"github.com/chengsn/kite-desktop/pkg/handlers/resources"
+	"github.com/chengsn/kite-desktop/pkg/middleware"
+	"github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

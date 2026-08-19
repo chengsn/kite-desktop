@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -345,17 +345,17 @@ func TestUpdateSourceRewrite(t *testing.T) {
 	releaseURL := "https://github.com/chengsn/kite-desktop/releases/tag/v0.1.10"
 	downloadURL := "https://github.com/chengsn/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
 
-	if got := RewriteReleaseURLBySource(releaseURL, UpdateSourceCNB); got != "https://cnb.cool/eryajf/kite-desktop/-/releases/tag/v0.1.10" {
+	if got := RewriteReleaseURLBySource(releaseURL, UpdateSourceCNB); got != "https://cnb.cool/chengsn/kite-desktop/-/releases/tag/v0.1.10" {
 		t.Fatalf("RewriteReleaseURLBySource(cnb) = %q", got)
 	}
-	if got := RewriteAssetDownloadURLBySource(downloadURL, UpdateSourceCNB); got != "https://cnb.cool/eryajf/kite-desktop/-/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg" {
+	if got := RewriteAssetDownloadURLBySource(downloadURL, UpdateSourceCNB); got != "https://cnb.cool/chengsn/kite-desktop/-/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg" {
 		t.Fatalf("RewriteAssetDownloadURLBySource(cnb) = %q", got)
 	}
 }
 
 func TestAlternateMirrorDownloadURL(t *testing.T) {
 	githubURL := "https://github.com/chengsn/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
-	cnbURL := "https://cnb.cool/eryajf/kite-desktop/-/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
+	cnbURL := "https://cnb.cool/chengsn/kite-desktop/-/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
 
 	if got := AlternateMirrorDownloadURL(githubURL); got != cnbURL {
 		t.Fatalf("AlternateMirrorDownloadURL(github) = %q, want %q", got, cnbURL)

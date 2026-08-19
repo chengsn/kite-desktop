@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/websocket"
 	"k8s.io/klog/v2"

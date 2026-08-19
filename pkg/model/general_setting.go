@@ -6,8 +6,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 	"gorm.io/gorm"
 	"k8s.io/klog/v2"
 )

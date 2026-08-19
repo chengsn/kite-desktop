@@ -3,7 +3,7 @@ package ai
 import (
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/model"
 )
 
 func TestNormalizeProvider(t *testing.T) {

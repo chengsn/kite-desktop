@@ -7,13 +7,13 @@
 <h1>Kite Desktop</h1>
 
 [![Auth](https://img.shields.io/badge/Auth-eryajf-ff69b4)](https://github.com/eryajf)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop)
 [![Gin Version](https://img.shields.io/badge/Gin-1.6.3-brightgreen)](https://github.com/chengsn/kite-desktop)
 [![Gorm Version](https://img.shields.io/badge/Gorm-1.24.5-brightgreen)](https://github.com/chengsn/kite-desktop)
-[![GitHub Pull Requests](https://img.shields.io/github/stars/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop/stargazers)
-[![HitCount](https://views.whatilearened.today/views/github/eryajf/kite-desktop.svg)](https://github.com/chengsn/kite-desktop)
-[![GitHub license](https://img.shields.io/github/license/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop/blob/main/LICENSE)
-[![Commits](https://img.shields.io/github/commit-activity/m/eryajf/kite-desktop?color=ffff00)](https://github.com/chengsn/kite-desktop/commits/main)
+[![GitHub Pull Requests](https://img.shields.io/github/stars/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop/stargazers)
+[![HitCount](https://views.whatilearened.today/views/github/chengsn/kite-desktop.svg)](https://github.com/chengsn/kite-desktop)
+[![GitHub license](https://img.shields.io/github/license/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop/blob/main/LICENSE)
+[![Commits](https://img.shields.io/github/commit-activity/m/chengsn/kite-desktop?color=ffff00)](https://github.com/chengsn/kite-desktop/commits/main)
 
 <p> 🪁 一个基于 Wails v3 打造、面向桌面端的 K8S 多集群管理工具 🪁</p>
 
@@ -37,7 +37,7 @@
 
 当前项目是在原始 Kite 基础上进行桌面端方向“魔改”的产物，目标是把原本偏 Web / Server 形态的能力，逐步重构为一个真正可安装、可分发、可本地使用的桌面端 Kubernetes 管理工具。同时在 AI 智能融合方面做更多更深入的探索。
 
-中国大陆地区，推荐访问镜像库：<https://cnb.cool/eryajf/kite-desktop>
+中国大陆地区，推荐访问镜像库：<https://cnb.cool/chengsn/kite-desktop>
 
 ## 技术栈
 

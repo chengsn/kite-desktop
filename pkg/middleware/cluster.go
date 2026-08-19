@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
 	"github.com/gin-gonic/gin"
 )
 

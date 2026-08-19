@@ -2,7 +2,7 @@ package ai
 
 import (
 	anthropic "github.com/anthropics/anthropic-sdk-go"
-	"github.com/eryajf/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/shared"
 )

@@ -6,7 +6,7 @@ import (
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
 	anthropicoption "github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/openai/openai-go"
 	openaioption "github.com/openai/openai-go/option"
 )

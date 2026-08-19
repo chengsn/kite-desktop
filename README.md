@@ -7,13 +7,13 @@ English | [简体中文](./README_zh.md)
 <h1>Kite Desktop</h1>
 
 [![Auth](https://img.shields.io/badge/Auth-eryajf-ff69b4)](https://github.com/eryajf)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop)
 [![Gin Version](https://img.shields.io/badge/Gin-1.6.3-brightgreen)](https://github.com/chengsn/kite-desktop)
 [![Gorm Version](https://img.shields.io/badge/Gorm-1.24.5-brightgreen)](https://github.com/chengsn/kite-desktop)
-[![GitHub Pull Requests](https://img.shields.io/github/stars/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop/stargazers)
-[![HitCount](https://views.whatilearened.today/views/github/eryajf/kite-desktop.svg)](https://github.com/chengsn/kite-desktop)
-[![GitHub license](https://img.shields.io/github/license/eryajf/kite-desktop)](https://github.com/chengsn/kite-desktop/blob/main/LICENSE)
-[![Commits](https://img.shields.io/github/commit-activity/m/eryajf/kite-desktop?color=ffff00)](https://github.com/chengsn/kite-desktop/commits/main)
+[![GitHub Pull Requests](https://img.shields.io/github/stars/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop/stargazers)
+[![HitCount](https://views.whatilearened.today/views/github/chengsn/kite-desktop.svg)](https://github.com/chengsn/kite-desktop)
+[![GitHub license](https://img.shields.io/github/license/chengsn/kite-desktop)](https://github.com/chengsn/kite-desktop/blob/main/LICENSE)
+[![Commits](https://img.shields.io/github/commit-activity/m/chengsn/kite-desktop?color=ffff00)](https://github.com/chengsn/kite-desktop/commits/main)
 
 <p> 🪁 A Wails v3-based desktop tool for multi-cluster K8S management 🪁</p>
 
@@ -37,7 +37,7 @@ First, thanks to the original Kite authors and all contributors. The upstream pr
 
 This project is the result of a substantial desktop-oriented rework based on the original Kite. The goal is to gradually reshape what was originally more Web / Server oriented into a truly installable, distributable, locally usable desktop Kubernetes management tool. At the same time, the project will explore deeper integration with AI capabilities.
 
-For users in mainland China, the mirror repository is recommended: <https://cnb.cool/eryajf/kite-desktop>
+For users in mainland China, the mirror repository is recommended: <https://cnb.cool/chengsn/kite-desktop>
 
 ## Tech Stack
 

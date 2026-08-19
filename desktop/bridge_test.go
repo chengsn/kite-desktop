@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

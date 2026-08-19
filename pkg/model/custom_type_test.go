@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 	"gorm.io/gorm"
 )
 

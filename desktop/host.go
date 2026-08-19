@@ -19,8 +19,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/icons"

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/eryajf/kite-desktop/pkg/middleware"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/middleware"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"github.com/gin-gonic/gin"
 )
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/eryajf/kite-desktop/pkg/cluster"
-	"github.com/eryajf/kite-desktop/pkg/kube"
+	"github.com/chengsn/kite-desktop/pkg/cluster"
+	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/websocket"
 	corev1 "k8s.io/api/core/v1"

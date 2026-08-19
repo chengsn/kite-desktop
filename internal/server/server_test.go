@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/version"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/version"
 	"github.com/gin-gonic/gin"
 )
 

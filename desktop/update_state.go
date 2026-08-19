@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/blang/semver/v4"
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 )
 
 type desktopUpdateDownloadStatus string

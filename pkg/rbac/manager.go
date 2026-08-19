@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
-	"github.com/eryajf/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/model"
 	"k8s.io/klog/v2"
 )
 

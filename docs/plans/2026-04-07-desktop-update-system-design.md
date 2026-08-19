@@ -121,7 +121,7 @@ Release 中保留：
 
 版本检查仍基于 GitHub Releases：
 
-- `GET /repos/eryajf/kite-desktop/releases/latest`
+- `GET /repos/chengsn/kite-desktop/releases/latest`
 
 远程检查需要获取：
 

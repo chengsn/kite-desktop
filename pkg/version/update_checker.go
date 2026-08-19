@@ -21,7 +21,7 @@ const (
 	versionCacheTTL     = time.Hour
 )
 
-var githubLatestReleaseAPI = "https://api.github.com/repos/eryajf/kite-desktop/releases/latest"
+var githubLatestReleaseAPI = "https://api.github.com/repos/chengsn/kite-desktop/releases/latest"
 
 const (
 	UpdateSourceAuto   = "auto"
@@ -334,11 +334,11 @@ func githubURLToCNB(rawURL string) string {
 	if !strings.HasPrefix(rest, "releases/") {
 		return rawURL
 	}
-	return "https://cnb.cool/eryajf/kite-desktop/-/" + rest
+	return "https://cnb.cool/chengsn/kite-desktop/-/" + rest
 }
 
 func cnbURLToGitHub(rawURL string) string {
-	const cnbPrefix = "https://cnb.cool/eryajf/kite-desktop/-/"
+	const cnbPrefix = "https://cnb.cool/chengsn/kite-desktop/-/"
 	if !strings.HasPrefix(rawURL, cnbPrefix) {
 		return rawURL
 	}

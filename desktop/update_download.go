@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	kiteversion "github.com/eryajf/kite-desktop/pkg/version"
+	kiteversion "github.com/chengsn/kite-desktop/pkg/version"
 )
 
 const updateDownloadBufferSize = 128 * 1024

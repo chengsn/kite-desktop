@@ -3,7 +3,7 @@ package model
 import (
 	"testing"
 
-	"github.com/eryajf/kite-desktop/pkg/common"
+	"github.com/chengsn/kite-desktop/pkg/common"
 )
 
 func TestDefaultGeneralNodeTerminalImageValue(t *testing.T) {
