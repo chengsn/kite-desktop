@@ -16,10 +16,10 @@ tasks:
     generates:
       - ui/node_modules
     preconditions:
-      - sh: /usr/local/bin/pnpm -v
+      - sh: command -v pnpm
         msg: "Looks like pnpm isn't installed. Please install pnpm to build the shared web UI in ui/."
     cmds:
-      - /usr/local/bin/pnpm --dir ui install --frozen-lockfile
+      - pnpm --dir ui install --frozen-lockfile
 
   build:webui:
     summary: Build the shared web UI for the embedded desktop server
@@ -32,7 +32,7 @@ tasks:
     deps:
       - task: install:webui:deps
     cmds:
-      - /usr/local/bin/pnpm --dir ui build
+      - pnpm --dir ui build
 
   install:frontend:deps:
     summary: Install frontend dependencies
