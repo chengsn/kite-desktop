@@ -1343,6 +1343,7 @@
     "history": "聊天记录",
     "openInNewTab": "在新标签页中打开",
     "close": "关闭",
+    "windowTitle": "Kite AI 对话",
     "composer": {
       "placeholder": "询问当前集群..."
     },
@@ -1862,7 +1863,6 @@
       "key": "键",
       "value": "值",
       "timeAdded": "添加时间",
-      "type": "类型",
       "message": "消息",
       "lastTransitionTime": "最后转换时间",
       "updatedReplicas": "已更新副本",
