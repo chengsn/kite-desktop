@@ -243,7 +243,7 @@ func TestCheckForUpdateFetchesLatestRelease(t *testing.T) {
 	if got.latestVersion != "1.2.4" {
 		t.Fatalf("latestVersion = %q, want %q", got.latestVersion, "1.2.4")
 	}
-	if got.releaseURL != "https://github.com/eryajf/kite-desktop/releases/tag/v1.2.4" {
+	if got.releaseURL != "https://github.com/chengsn/kite-desktop/releases/tag/v1.2.4" {
 		t.Fatalf("releaseURL = %q, want release url", got.releaseURL)
 	}
 	if got.releaseNotes != "Release notes" {
@@ -326,7 +326,7 @@ func TestCheckUpdateReturnsLatestRelease(t *testing.T) {
 	if got.Comparison != UpdateComparisonUpdateAvailable {
 		t.Fatalf("Comparison = %q, want %q", got.Comparison, UpdateComparisonUpdateAvailable)
 	}
-	if !got.HasNew || got.Release != "https://github.com/eryajf/kite-desktop/releases/tag/v1.2.4" {
+	if !got.HasNew || got.Release != "https://github.com/chengsn/kite-desktop/releases/tag/v1.2.4" {
 		t.Fatalf("unexpected update payload: %#v", got)
 	}
 	if got.ReleaseNotes != "Release notes" || got.PublishedAt != "2026-04-07T14:12:00Z" {
@@ -342,8 +342,8 @@ func TestCheckUpdateReturnsLatestRelease(t *testing.T) {
 }
 
 func TestUpdateSourceRewrite(t *testing.T) {
-	releaseURL := "https://github.com/eryajf/kite-desktop/releases/tag/v0.1.10"
-	downloadURL := "https://github.com/eryajf/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
+	releaseURL := "https://github.com/chengsn/kite-desktop/releases/tag/v0.1.10"
+	downloadURL := "https://github.com/chengsn/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
 
 	if got := RewriteReleaseURLBySource(releaseURL, UpdateSourceCNB); got != "https://cnb.cool/eryajf/kite-desktop/-/releases/tag/v0.1.10" {
 		t.Fatalf("RewriteReleaseURLBySource(cnb) = %q", got)
@@ -354,7 +354,7 @@ func TestUpdateSourceRewrite(t *testing.T) {
 }
 
 func TestAlternateMirrorDownloadURL(t *testing.T) {
-	githubURL := "https://github.com/eryajf/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
+	githubURL := "https://github.com/chengsn/kite-desktop/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
 	cnbURL := "https://cnb.cool/eryajf/kite-desktop/-/releases/download/v0.1.10/Kite-v0.1.10-macos-apple-silicon.dmg"
 
 	if got := AlternateMirrorDownloadURL(githubURL); got != cnbURL {
@@ -382,7 +382,7 @@ func stubVersionCheckClient(body string) *http.Client {
 func releasePayload(tag string) string {
 	return `{
 		"tag_name":"` + tag + `",
-		"html_url":"https://github.com/eryajf/kite-desktop/releases/tag/` + tag + `",
+		"html_url":"https://github.com/chengsn/kite-desktop/releases/tag/` + tag + `",
 		"body":"Release notes",
 		"published_at":"2026-04-07T14:12:00Z",
 		"assets":[

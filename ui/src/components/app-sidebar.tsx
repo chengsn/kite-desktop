@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import Icon from '@/assets/icon.png'
 import { useSidebarConfig } from '@/contexts/sidebar-config-context'
 import { useDesktopUpdate } from '@/hooks/use-desktop-update'
+import { useRuntime } from '@/contexts/runtime-context'
+import { cn } from '@/lib/utils'
 import { CollapsibleContent } from '@radix-ui/react-collapsible'
 import { IconLayoutDashboard } from '@tabler/icons-react'
 import { ChevronDown } from 'lucide-react'
@@ -31,6 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t } = useTranslation()
   const location = useLocation()
   const { isMobile, setOpenMobile, state } = useSidebar()
+  const { isTitlebarInsetActive } = useRuntime()
   const { config, isLoading, getIconComponent } = useSidebarConfig()
   const { result: updateResult } = useDesktopUpdate()
   const isIconCollapsed = !isMobile && state === 'collapsed'
@@ -79,7 +82,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   const branding = (
-    <SidebarHeader className="gap-2 border-b border-sidebar-border/60 px-2 py-2">
+    <SidebarHeader
+      className={cn(
+        'gap-2 border-b border-sidebar-border/60 px-2',
+        isTitlebarInsetActive ? 'pb-2 pt-(--mac-titlebar-inset)' : 'py-2'
+      )}
+    >
       <div className="flex items-center gap-1.5 group-data-[collapsible=icon]:justify-center">
         <Link
           to="/"

@@ -326,7 +326,7 @@ func applyUpdateSource(result *updateCheckResult, source string) {
 }
 
 func githubURLToCNB(rawURL string) string {
-	const githubPrefix = "https://github.com/eryajf/kite-desktop/"
+	const githubPrefix = "https://github.com/chengsn/kite-desktop/"
 	if !strings.HasPrefix(rawURL, githubPrefix) {
 		return rawURL
 	}
@@ -346,5 +346,5 @@ func cnbURLToGitHub(rawURL string) string {
 	if !strings.HasPrefix(rest, "releases/") {
 		return rawURL
 	}
-	return "https://github.com/eryajf/kite-desktop/" + rest
+	return "https://github.com/chengsn/kite-desktop/" + rest
 }

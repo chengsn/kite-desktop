@@ -11,12 +11,20 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   checkDesktopUpdate,
   DESKTOP_LOCAL_RUNTIME,
+  DESKTOP_WINDOW_STATE_CHANGE_EVENT,
+  DesktopLiveWindowState,
+  getDesktopWindowState,
   getDesktopStatus,
   getDesktopUpdateState,
 } from '@/lib/desktop'
 
 interface RuntimeContextType {
   isDesktop: boolean
+  isImmersiveMacTitlebar: boolean
+  /** True while the immersive macOS titlebar inset should be applied to the
+   * main UI. It is dropped when the window is maximised or fullscreen so the
+   * sidebar branding and content move up to the very top. */
+  isTitlebarInsetActive: boolean
   isReady: boolean
 }
 
@@ -26,11 +34,61 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [state, setState] = useState<RuntimeContextType>({
     isDesktop: false,
+    isImmersiveMacTitlebar: false,
+    isTitlebarInsetActive: false,
     isReady: false,
   })
 
   useEffect(() => {
     let active = true
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined
+
+    const applyWindowState = (windowState: DesktopLiveWindowState) => {
+      if (!active) return
+      setState((prev) => {
+        const isTitlebarInsetActive =
+          prev.isImmersiveMacTitlebar &&
+          !windowState.maximised &&
+          !windowState.fullscreen
+        if (prev.isTitlebarInsetActive === isTitlebarInsetActive) {
+          return prev
+        }
+        return { ...prev, isTitlebarInsetActive }
+      })
+    }
+
+    const refreshWindowState = () => {
+      if (!active) return
+      void getDesktopWindowState().then(applyWindowState)
+    }
+
+    const handleWindowStateChange = (event: Event) => {
+      const detail = (event as CustomEvent<DesktopLiveWindowState>).detail
+      applyWindowState(
+        detail && typeof detail.maximised === 'boolean'
+          ? detail
+          : { maximised: false, fullscreen: false }
+      )
+      // Re-query the authoritative state right after the notification: the
+      // native query can lag behind the actual fullscreen/maximise transition.
+      refreshWindowState()
+    }
+
+    const handleResize = () => {
+      if (resizeTimer) {
+        clearTimeout(resizeTimer)
+      }
+      // Fullscreen transitions fire a series of resize events; only query the
+      // final one so the inset drops exactly when the transition settles.
+      resizeTimer = setTimeout(refreshWindowState, 150)
+    }
+
+    window.addEventListener(
+      DESKTOP_WINDOW_STATE_CHANGE_EVENT,
+      handleWindowStateChange
+    )
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('focus', refreshWindowState)
 
     void getDesktopStatus()
       .then((status) => {
@@ -38,12 +96,18 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        const isDesktop =
+          status.enabled && status.runtime === DESKTOP_LOCAL_RUNTIME
         setState({
-          isDesktop: status.enabled && status.runtime === DESKTOP_LOCAL_RUNTIME,
+          isDesktop,
+          isImmersiveMacTitlebar:
+            status.capabilities.immersiveMacTitlebar === true,
+          isTitlebarInsetActive: false,
           isReady: true,
         })
 
-        if (status.enabled && status.runtime === DESKTOP_LOCAL_RUNTIME) {
+        if (isDesktop) {
+          refreshWindowState()
           void checkDesktopUpdate(false)
             .then(() => getDesktopUpdateState())
             .then((updateState) => {
@@ -67,12 +131,23 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
 
         setState({
           isDesktop: false,
+          isImmersiveMacTitlebar: false,
+          isTitlebarInsetActive: false,
           isReady: true,
         })
       })
 
     return () => {
       active = false
+      if (resizeTimer) {
+        clearTimeout(resizeTimer)
+      }
+      window.removeEventListener(
+        DESKTOP_WINDOW_STATE_CHANGE_EVENT,
+        handleWindowStateChange
+      )
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('focus', refreshWindowState)
     }
   }, [])
 

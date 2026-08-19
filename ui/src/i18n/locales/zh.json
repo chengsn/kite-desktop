@@ -1343,7 +1343,6 @@
     "history": "聊天记录",
     "openInNewTab": "在新标签页中打开",
     "close": "关闭",
-    "windowTitle": "Kite AI 对话",
     "composer": {
       "placeholder": "询问当前集群..."
     },

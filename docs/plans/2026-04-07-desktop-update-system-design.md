@@ -330,7 +330,7 @@ UI 不应再把第 2 和第 3 种状态混为一谈。
   "latestVersion": "0.1.3",
   "comparison": "update_available",
   "hasNewVersion": true,
-  "releaseUrl": "https://github.com/eryajf/kite-desktop/releases/tag/v0.1.3",
+  "releaseUrl": "https://github.com/chengsn/kite-desktop/releases/tag/v0.1.3",
   "releaseNotes": "bug fixes...",
   "publishedAt": "2026-04-07T14:00:00Z",
   "checkedAt": "2026-04-07T14:10:00Z",

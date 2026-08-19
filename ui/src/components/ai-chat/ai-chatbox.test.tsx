@@ -24,6 +24,15 @@ vi.mock('@/contexts/ai-chat-context', () => ({
   useAIChatContext,
 }))
 
+vi.mock('@/contexts/runtime-context', () => ({
+  useRuntime: () => ({
+    isDesktop: true,
+    isImmersiveMacTitlebar: false,
+    isTitlebarInsetActive: false,
+    isReady: true,
+  }),
+}))
+
 vi.mock('@/hooks/use-ai-chat', () => ({
   useAIChat,
 }))

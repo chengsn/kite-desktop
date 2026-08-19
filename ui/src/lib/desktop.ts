@@ -6,10 +6,19 @@ export const DESKTOP_LOCAL_RUNTIME = 'desktop-local'
 export const DESKTOP_NAVIGATE_BACK_EVENT = 'kite:navigate-back'
 export const DESKTOP_NAVIGATE_FORWARD_EVENT = 'kite:navigate-forward'
 export const DESKTOP_WINDOW_NAME_CHANGE_EVENT = 'kite:window-name-change'
+export const DESKTOP_WINDOW_STATE_CHANGE_EVENT = 'kite:window-state-change'
 
 declare global {
   interface Window {
     __KITE_WINDOW_NAME__?: string
+    /** Wails injects this native bridge into every desktop webview. */
+    webkit?: {
+      messageHandlers?: {
+        external?: {
+          postMessage: (message: string) => void
+        }
+      }
+    }
   }
 }
 
@@ -19,6 +28,9 @@ export interface DesktopCapabilities {
   tray: boolean
   menu: boolean
   singleInstance: boolean
+  /** macOS immersive titlebar: traffic lights float over the webview and
+   * the top edge is a native drag region. */
+  immersiveMacTitlebar: boolean
 }
 
 export interface DesktopStatus {
@@ -166,12 +178,18 @@ export interface DesktopNavigationState {
   canGoForward: boolean
 }
 
+export interface DesktopLiveWindowState {
+  maximised: boolean
+  fullscreen: boolean
+}
+
 const DEFAULT_CAPABILITIES: DesktopCapabilities = {
   nativeFileDialog: false,
   nativeSaveDialog: false,
   tray: false,
   menu: false,
   singleInstance: false,
+  immersiveMacTitlebar: false,
 }
 
 let desktopModePromise: Promise<boolean> | null = null
@@ -510,6 +528,28 @@ export async function getDesktopUpdateState(): Promise<DesktopUpdateState | null
   return (await response.json()) as DesktopUpdateState
 }
 
+export async function getDesktopWindowState(
+  windowName?: string
+): Promise<DesktopLiveWindowState> {
+  if (!(await isDesktopMode())) {
+    return { maximised: false, fullscreen: false }
+  }
+
+  const name = windowName || getDesktopWindowName()
+  const query = name ? `?windowName=${encodeURIComponent(name)}` : ''
+  const response = await fetch(
+    withSubPath(`/api/desktop/window/state${query}`),
+    {
+      credentials: 'include',
+    }
+  )
+  if (!response.ok) {
+    return { maximised: false, fullscreen: false }
+  }
+
+  return (await response.json()) as DesktopLiveWindowState
+}
+
 export async function checkDesktopUpdate(
   force: boolean = false
 ): Promise<DesktopUpdateCheckInfo | null> {
@@ -567,6 +607,25 @@ export function getDesktopWindowName(): string {
     return ''
   }
   return window.__KITE_WINDOW_NAME__ || ''
+}
+
+/**
+ * Starts a native macOS window drag from the webview. Wails routes the
+ * `wails:drag` message to the native window, which continues the drag from
+ * the last mouse-down event. Returns false when the bridge is unavailable
+ * (e.g. browser runtime).
+ */
+export function startWindowDrag(): boolean {
+  const bridge = window.webkit?.messageHandlers?.external
+  if (!bridge) {
+    return false
+  }
+  try {
+    bridge.postMessage('wails:drag')
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function syncDesktopNavigationState(

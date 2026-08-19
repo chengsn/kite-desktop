@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAIChatContext } from '@/contexts/ai-chat-context'
+import { useRuntime } from '@/contexts/runtime-context'
 import * as yaml from 'js-yaml'
 import {
   Bot,
@@ -23,7 +24,8 @@ import ReactMarkdown from 'react-markdown'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
 
-import { copyTextToClipboard, openURL } from '@/lib/desktop'
+import { copyTextToClipboard, openURL, startWindowDrag } from '@/lib/desktop'
+import { cn } from '@/lib/utils'
 import { withSubPath } from '@/lib/subpath'
 import { ChatMessage, ChatSession, useAIChat } from '@/hooks/use-ai-chat'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -711,6 +713,8 @@ function HistoryPanel({
   onDeleteSession,
   onNewSession,
   onClose,
+  standalone = false,
+  isImmersiveMacTitlebar = false,
 }: {
   history: ChatSession[]
   currentSessionId: string | null
@@ -718,6 +722,8 @@ function HistoryPanel({
   onDeleteSession: (session: ChatSession) => void
   onNewSession: () => void
   onClose: () => void
+  standalone?: boolean
+  isImmersiveMacTitlebar?: boolean
 }) {
   const { i18n, t } = useTranslation()
   const formatDate = (timestamp: number) => {
@@ -757,7 +763,16 @@ function HistoryPanel({
   return (
     <div className="absolute inset-0 z-20 flex flex-col bg-background">
       {/* Header */}
-      <div className="flex h-11 shrink-0 items-center justify-between border-b bg-muted/50 px-3">
+      <div
+        className={cn(
+          'flex shrink-0 items-center justify-between border-b bg-muted/50',
+          // Keep the history title on the same line as the macOS traffic
+          // lights and clear of them in the immersive sidecar window.
+          standalone && isImmersiveMacTitlebar
+            ? 'h-8 pl-[4.75rem] pr-3'
+            : 'h-11 px-3'
+        )}
+      >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <Clock className="h-4 w-4" />
           {t('aiChat.history')}
@@ -1039,6 +1054,7 @@ export function AIChatbox({
   sessionId = '',
 }: AIChatboxProps) {
   const { i18n, t } = useTranslation()
+  const { isImmersiveMacTitlebar } = useRuntime()
   const isMobile = useIsMobile()
   const { isOpen, isAvailable, openChat, closeChat, pageContext } =
     useAIChatContext()
@@ -1166,7 +1182,6 @@ export function AIChatbox({
     }
     const url = withSubPath(`/ai-chat-box?${params.toString()}`)
     void openURL(url, {
-      title: t('aiChat.windowTitle', { defaultValue: 'Kite AI Chat' }),
       width: desktopWidth,
       height: desktopHeight,
       minWidth: 720,
@@ -1185,7 +1200,6 @@ export function AIChatbox({
     desktopHeight,
     desktopWidth,
     saveCurrentSession,
-    t,
   ])
 
   const handleSend = useCallback(() => {
@@ -1312,6 +1326,23 @@ export function AIChatbox({
     )
   }
 
+  const handleHeaderMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!standalone || !isImmersiveMacTitlebar || event.button !== 0) {
+      return
+    }
+    const target = event.target as HTMLElement
+    if (
+      target.closest(
+        'button, a, input, textarea, select, label, [role="button"]'
+      )
+    ) {
+      return
+    }
+    if (startWindowDrag()) {
+      event.preventDefault()
+    }
+  }
+
   return (
     <div
       className={
@@ -1355,9 +1386,17 @@ export function AIChatbox({
       )}
 
       <div
-        className={`flex h-11 shrink-0 items-center justify-between border-b bg-muted/50 px-3 ${
+        onMouseDown={handleHeaderMouseDown}
+        className={cn(
+          'flex shrink-0 items-center justify-between border-b bg-muted/50',
+          // In the standalone sidecar window the macOS traffic lights float
+          // over the top-left corner; keep the header row on the same line
+          // as the traffic lights and shift the content right to clear them.
+          standalone && isImmersiveMacTitlebar
+            ? 'h-8 select-none pl-[4.75rem] pr-3'
+            : 'h-11 px-3',
           standalone ? '' : 'rounded-t-lg'
-        }`}
+        )}
       >
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Bot className="h-4 w-4" />
@@ -1434,6 +1473,8 @@ export function AIChatbox({
         {/* History panel overlay */}
         {showHistory && (
           <HistoryPanel
+            standalone={standalone}
+            isImmersiveMacTitlebar={isImmersiveMacTitlebar}
             history={history}
             currentSessionId={currentSessionId}
             onLoadSession={loadSession}

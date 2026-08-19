@@ -24,10 +24,40 @@ Runtime response shape:
     "nativeSaveDialog": true,
     "tray": true,
     "menu": true,
-    "singleInstance": true
+    "singleInstance": true,
+    "immersiveMacTitlebar": true
   }
 }
 ```
+
+`immersiveMacTitlebar` is only `true` on macOS. It means every window (main
+window, AI chat sidecar, child windows) uses an immersive title bar: the
+native traffic lights float over the webview content, the native title bar
+strip is gone, and the top edge (32px) of the main / child windows is a native
+drag region for moving the window. The AI chat sidecar intentionally has no
+native drag strip so its header row stays interactive; it remains draggable
+through the traffic lights.
+
+## Immersive macOS Titlebar
+
+When `capabilities.immersiveMacTitlebar` is `true`, the UI must keep the top
+of the window clear of the traffic lights:
+
+- the sidebar branding shifts down (`--mac-titlebar-inset`, 2rem)
+- the content header / scrollable area starts below the same inset
+- the standalone AI chat header shifts its title right instead of applying
+  the top inset, because the sidecar has no drag strip
+- the standalone AI chat header starts a native drag (`wails:drag` through
+  the Wails webview bridge) when pressed on non-interactive areas, so the
+  sidecar stays draggable by its top even without a native drag strip
+
+While the window is maximised or fullscreen the inset is dropped: the sidebar
+branding and content area move up to the very top. The UI tracks this through
+`GET /api/desktop/window/state` and the `kite:window-state-change` event
+(consumed in `ui/src/contexts/runtime-context.tsx`), then re-queries the
+authoritative state and also refreshes on webview `resize` / `focus` so the
+inset settles reliably even across fullscreen transitions; page components
+should not add ad-hoc padding based on browser/platform sniffing.
 
 ## Auth Contract
 
@@ -113,6 +143,23 @@ Hides the main window.
 ### `POST /api/desktop/window/quit`
 
 Quits the desktop app.
+
+### `GET /api/desktop/window/state?windowName=...`
+
+Returns the live window state of the requested window (defaults to the main
+window):
+
+```json
+{
+  "maximised": false,
+  "fullscreen": false
+}
+```
+
+The host also emits a `kite:window-state-change` DOM `CustomEvent` (with the
+same shape as `detail`) on every tracked window whenever it enters or leaves
+the maximised / fullscreen state, and on window resizes (fullscreen
+transitions resize the window).
 
 ### `POST /api/desktop/copy-to-clipboard`
 

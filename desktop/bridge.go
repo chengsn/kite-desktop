@@ -25,11 +25,12 @@ type desktopBridge struct {
 }
 
 type desktopCapabilities struct {
-	NativeFileDialog bool `json:"nativeFileDialog"`
-	NativeSaveDialog bool `json:"nativeSaveDialog"`
-	Tray             bool `json:"tray"`
-	Menu             bool `json:"menu"`
-	SingleInstance   bool `json:"singleInstance"`
+	NativeFileDialog     bool `json:"nativeFileDialog"`
+	NativeSaveDialog     bool `json:"nativeSaveDialog"`
+	Tray                 bool `json:"tray"`
+	Menu                 bool `json:"menu"`
+	SingleInstance       bool `json:"singleInstance"`
+	ImmersiveMacTitlebar bool `json:"immersiveMacTitlebar"`
 }
 
 type desktopStatusResponse struct {
@@ -216,6 +217,7 @@ func (d *desktopBridge) registerRoutes(engine *gin.Engine) {
 	api.POST("/window/focus", d.handleFocusWindow)
 	api.POST("/window/hide", d.handleHideWindow)
 	api.POST("/window/quit", d.handleQuitWindow)
+	api.GET("/window/state", d.handleWindowState)
 	api.POST("/navigation/state", d.handleNavigationState)
 	api.POST("/copy-to-clipboard", d.handleCopyToClipboard)
 	api.POST("/import-kubeconfig", d.handleImportKubeconfig)
@@ -249,6 +251,15 @@ func (d *desktopBridge) handleAppInfo(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, d.host.appInfo())
+}
+
+func (d *desktopBridge) handleWindowState(c *gin.Context) {
+	if d.host == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "desktop host unavailable"})
+		return
+	}
+
+	c.JSON(http.StatusOK, d.host.windowState(c.Query("windowName")))
 }
 
 func (d *desktopBridge) handleUpdateState(c *gin.Context) {

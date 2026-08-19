@@ -33,22 +33,23 @@ var desktopTrayIcon []byte
 var desktopMacAppIcon []byte
 
 const (
-	aiChatToggleEvent     = "kite:ai-chat-toggle"
-	pageFindOpenEvent     = "kite:page-find-open"
-	pageFindNextEvent     = "kite:page-find-next"
-	pageFindPreviousEvent = "kite:page-find-previous"
-	navigateBackEvent     = "kite:navigate-back"
-	navigateForwardEvent  = "kite:navigate-forward"
-	windowNameChangeEvent = "kite:window-name-change"
-	mainWindowName        = "main"
-	aiSidecarWindowName   = "ai-sidecar"
-	aiSidecarWindowTitle  = "Kite AI Chat"
-	aiSidecarGap          = 0
-	aiSidecarSideRight    = "right"
-	aiSidecarSideLeft     = "left"
-	settingsGeneralRoute  = "/settings?tab=general"
-	settingsDesktopRoute  = "/settings?tab=desktop"
-	settingsAboutRoute    = "/settings?tab=about"
+	aiChatToggleEvent      = "kite:ai-chat-toggle"
+	pageFindOpenEvent      = "kite:page-find-open"
+	pageFindNextEvent      = "kite:page-find-next"
+	pageFindPreviousEvent  = "kite:page-find-previous"
+	navigateBackEvent      = "kite:navigate-back"
+	navigateForwardEvent   = "kite:navigate-forward"
+	windowNameChangeEvent  = "kite:window-name-change"
+	windowStateChangeEvent = "kite:window-state-change"
+	mainWindowName         = "main"
+	aiSidecarWindowName    = "ai-sidecar"
+	macTitleBarInsetHeight = 32
+	aiSidecarGap           = 0
+	aiSidecarSideRight     = "right"
+	aiSidecarSideLeft      = "left"
+	settingsGeneralRoute   = "/settings?tab=general"
+	settingsDesktopRoute   = "/settings?tab=desktop"
+	settingsAboutRoute     = "/settings?tab=about"
 )
 
 func desktopApplicationIcon() []byte {
@@ -76,6 +77,11 @@ type desktopWindowState struct {
 	Maximised bool `json:"maximised"`
 }
 
+type desktopLiveWindowState struct {
+	Maximised  bool `json:"maximised"`
+	Fullscreen bool `json:"fullscreen"`
+}
+
 type desktopWindowStateStore struct {
 	path  string
 	mu    sync.Mutex
@@ -98,6 +104,9 @@ type desktopHost struct {
 	systemTray  *application.SystemTray
 	backItem    *application.MenuItem
 	forwardItem *application.MenuItem
+
+	windowsMu sync.Mutex
+	windows   map[string]*application.WebviewWindow
 
 	aiSidecarClosing atomic.Bool
 	quitting         atomic.Bool
@@ -185,6 +194,7 @@ func newDesktopHost(app *application.App, baseURL string, paths desktopPaths) *d
 		updateStore:     updateStore,
 		downloadManager: newDesktopUpdateDownloadManager(),
 		updateClient:    http.DefaultClient,
+		windows:         make(map[string]*application.WebviewWindow),
 	}
 }
 
@@ -207,11 +217,12 @@ func desktopSingleInstanceOptions(onSecondLaunch func()) *application.SingleInst
 
 func (h *desktopHost) capabilities() desktopCapabilities {
 	return desktopCapabilities{
-		NativeFileDialog: true,
-		NativeSaveDialog: true,
-		Tray:             true,
-		Menu:             true,
-		SingleInstance:   true,
+		NativeFileDialog:     true,
+		NativeSaveDialog:     true,
+		Tray:                 true,
+		Menu:                 true,
+		SingleInstance:       true,
+		ImmersiveMacTitlebar: runtime.GOOS == "darwin",
 	}
 }
 
@@ -379,6 +390,7 @@ func (h *desktopHost) bindWindowName(window *application.WebviewWindow, name str
 	}
 
 	h.setWindowName(window, name)
+	h.trackWindow(window, name)
 
 	window.RegisterHook(events.Common.WindowShow, func(event *application.WindowEvent) {
 		h.setWindowName(window, name)
@@ -386,6 +398,21 @@ func (h *desktopHost) bindWindowName(window *application.WebviewWindow, name str
 	window.RegisterHook(events.Common.WindowFocus, func(event *application.WindowEvent) {
 		h.setWindowName(window, name)
 	})
+	// Notify the webview whenever its window enters or leaves a state where
+	// the immersive titlebar inset should be dropped (maximised / fullscreen).
+	for _, eventType := range []events.WindowEventType{
+		events.Common.WindowMaximise,
+		events.Common.WindowUnMaximise,
+		events.Common.WindowFullscreen,
+		events.Common.WindowUnFullscreen,
+		// Fullscreen transitions also resize the window; emitting here makes
+		// the webview state settle reliably after the transition completes.
+		events.Common.WindowDidResize,
+	} {
+		window.RegisterHook(eventType, func(event *application.WindowEvent) {
+			h.emitWindowStateChange(window)
+		})
+	}
 
 	switch runtime.GOOS {
 	case "darwin":
@@ -401,6 +428,62 @@ func (h *desktopHost) bindWindowName(window *application.WebviewWindow, name str
 			h.setWindowName(window, name)
 		})
 	}
+}
+
+func (h *desktopHost) trackWindow(window *application.WebviewWindow, name string) {
+	if h == nil || window == nil || name == "" {
+		return
+	}
+	h.windowsMu.Lock()
+	defer h.windowsMu.Unlock()
+	if h.windows == nil {
+		h.windows = make(map[string]*application.WebviewWindow)
+	}
+	h.windows[name] = window
+}
+
+func (h *desktopHost) windowByName(name string) *application.WebviewWindow {
+	if h == nil || name == "" {
+		return nil
+	}
+	h.windowsMu.Lock()
+	defer h.windowsMu.Unlock()
+	return h.windows[name]
+}
+
+func (h *desktopHost) windowState(name string) desktopLiveWindowState {
+	if h == nil {
+		return desktopLiveWindowState{}
+	}
+	window := h.mainWindow
+	if name != "" && name != mainWindowName {
+		window = h.windowByName(name)
+	}
+	if window == nil {
+		return desktopLiveWindowState{}
+	}
+	return desktopLiveWindowState{
+		Maximised:  window.IsMaximised(),
+		Fullscreen: window.IsFullscreen(),
+	}
+}
+
+func (h *desktopHost) emitWindowStateChange(window *application.WebviewWindow) {
+	if h == nil || window == nil {
+		return
+	}
+	state := h.windowState(window.Name())
+	payload, err := json.Marshal(state)
+	if err != nil {
+		return
+	}
+	window.ExecJS(
+		fmt.Sprintf(
+			"window.dispatchEvent(new CustomEvent(%s,{detail:%s}))",
+			strconv.Quote(windowStateChangeEvent),
+			payload,
+		),
+	)
 }
 
 func (h *desktopHost) setNavigationMenuItems(backItem, forwardItem *application.MenuItem) {
@@ -732,7 +815,7 @@ func (h *desktopHost) openAISidecar(targetURL string, width, height, minWidth, m
 	h.aiSide = side
 
 	if sidecar, ok := h.getAISidecar(); ok {
-		sidecar.SetTitle(aiSidecarWindowTitle)
+		sidecar.SetTitle("Kite")
 		sidecar.SetMinSize(minWidth, minHeight)
 		if screen, err := h.mainWindow.GetScreen(); err == nil && screen != nil {
 			sidecar.SetBounds(denormalizeWindowBounds(bounds, screen))
@@ -751,9 +834,9 @@ func (h *desktopHost) openAISidecar(targetURL string, width, height, minWidth, m
 		initialBounds = denormalizeWindowBounds(bounds, screen)
 	}
 
-	sidecar := h.app.Window.NewWithOptions(desktopWindowOptions(application.WebviewWindowOptions{
+	sidecarOptions := desktopWindowOptions(application.WebviewWindowOptions{
 		Name:            aiSidecarWindowName,
-		Title:           aiSidecarWindowTitle,
+		Title:           "Kite",
 		URL:             targetURL,
 		Width:           initialBounds.Width,
 		Height:          initialBounds.Height,
@@ -762,7 +845,12 @@ func (h *desktopHost) openAISidecar(targetURL string, width, height, minWidth, m
 		Y:               initialBounds.Y,
 		MinWidth:        minWidth,
 		MinHeight:       minHeight,
-	}))
+	})
+	// The sidecar keeps its header row at the very top of the window, so it
+	// must not reserve a native drag strip (the strip would swallow clicks on
+	// the header buttons). The window stays draggable via the traffic lights.
+	sidecarOptions.Mac.InvisibleTitleBarHeight = 0
+	sidecar := h.app.Window.NewWithOptions(sidecarOptions)
 	sidecar.SetBounds(initialBounds)
 	h.registerAISidecarWindow(sidecar)
 	h.aiSidecar = sidecar
@@ -1137,19 +1225,19 @@ func buildApplicationMenu(h *desktopHost, devMode bool) *application.Menu {
 		if h == nil {
 			return
 		}
-		_ = h.openExternalURL("https://github.com/eryajf/kite-desktop#readme")
+		_ = h.openExternalURL("https://github.com/chengsn/kite-desktop#readme")
 	})
 	helpMenu.Add("GitHub").OnClick(func(ctx *application.Context) {
 		if h == nil {
 			return
 		}
-		_ = h.openExternalURL("https://github.com/eryajf/kite-desktop")
+		_ = h.openExternalURL("https://github.com/chengsn/kite-desktop")
 	})
 	helpMenu.Add("Report Issue").OnClick(func(ctx *application.Context) {
 		if h == nil {
 			return
 		}
-		_ = h.openExternalURL("https://github.com/eryajf/kite-desktop/issues/new")
+		_ = h.openExternalURL("https://github.com/chengsn/kite-desktop/issues/new")
 	})
 
 	return menu
@@ -1244,6 +1332,14 @@ func desktopWindowOptions(opts application.WebviewWindowOptions) application.Web
 	opts.DevToolsEnabled = desktopDevMode()
 	opts.UseApplicationMenu = true
 	opts.Mac = application.MacWindow{}
+	// Immersive macOS titlebar shared by every window: hide the native title
+	// bar but keep the traffic lights, extend content into the full window,
+	// and reserve a native invisible drag region at the top so the window can
+	// be moved by dragging anywhere along the top edge.
+	if runtime.GOOS == "darwin" {
+		opts.Mac.TitleBar = application.MacTitleBarHidden
+		opts.Mac.InvisibleTitleBarHeight = macTitleBarInsetHeight
+	}
 	return opts
 }
 

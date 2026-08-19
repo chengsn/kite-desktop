@@ -101,6 +101,7 @@ samp {
 
 :root {
   --header-height: 3.5rem;
+  --mac-titlebar-inset: 2rem;
   --radius: 0.5rem;
 }
 

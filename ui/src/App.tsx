@@ -32,6 +32,8 @@ import { installAnalyticsErrorTracking, trackPage } from './lib/analytics'
 import { getAnalyticsPageKey } from './lib/analytics-route'
 import { getClusterSwitchRedirectPath } from './lib/cluster-switch-navigation'
 import { prefetchMonaco } from './lib/monaco-runtime'
+import { useRuntime } from './contexts/runtime-context'
+import { cn } from './lib/utils'
 
 const FloatingTerminal = lazy(async () => {
   const module = await import('./components/floating-terminal')
@@ -103,6 +105,7 @@ export function shouldShowClusterLoading(
 function AppContent() {
   const { isOpen, mode, closeSearch } = useGlobalSearch()
   const { isOpen: isTerminalOpen } = useTerminal()
+  const { isTitlebarInsetActive } = useRuntime()
   const [searchParams] = useSearchParams()
   const isIframe = searchParams.get('iframe') === 'true'
 
@@ -119,7 +122,12 @@ function AppContent() {
     <>
       <SidebarProvider>
         <AppSidebar variant="inset" />
-        <SidebarInset className="h-full overflow-hidden">
+        <SidebarInset
+          className={cn(
+            'h-full overflow-hidden',
+            isTitlebarInsetActive && 'pt-(--mac-titlebar-inset)'
+          )}
+        >
           <SiteHeader />
           <div className="@container/main flex flex-1 min-h-0 flex-col overflow-y-auto scrollbar-hide">
             <div className="flex min-h-0 flex-1 flex-col gap-2 py-2 md:gap-3">

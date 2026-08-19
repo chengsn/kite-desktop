@@ -33,6 +33,15 @@ vi.mock('@/hooks/use-desktop-update', () => ({
   useDesktopUpdate: () => useDesktopUpdateMock(),
 }))
 
+vi.mock('@/contexts/runtime-context', () => ({
+  useRuntime: () => ({
+    isDesktop: true,
+    isImmersiveMacTitlebar: false,
+    isTitlebarInsetActive: false,
+    isReady: true,
+  }),
+}))
+
 vi.mock('./cluster-selector', () => ({
   ClusterSelector: () => <div>cluster-selector</div>,
 }))

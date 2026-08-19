@@ -1488,7 +1488,6 @@
     "history": "Chat history",
     "openInNewTab": "Open in new tab",
     "close": "Close",
-    "windowTitle": "Kite AI Chat",
     "composer": {
       "placeholder": "Ask about your cluster..."
     },
