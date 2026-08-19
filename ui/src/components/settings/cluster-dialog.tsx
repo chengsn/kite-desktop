@@ -3,7 +3,11 @@ import { IconEdit, IconInfoCircle, IconServer } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
 import { Cluster } from '@/types/api'
-import { ClusterConnectionTestResponse, ClusterCreateRequest } from '@/lib/api'
+import {
+  ClusterConnectionTestResponse,
+  ClusterCreateRequest,
+  ClusterUpdateRequest,
+} from '@/lib/api'
 import { translateClusterConnectionError } from '@/lib/cluster-connection-errors'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,6 +51,12 @@ function createClusterFormData(cluster?: Cluster | null) {
     description: cluster?.description || '',
     config: cluster?.config || '',
     prometheusURL: cluster?.prometheusURL || '',
+    prometheusUsername: cluster?.prometheusUsername || '',
+    // Never hydrated from the server: the stored secret is only replaced when
+    // the user types a new one.
+    prometheusPassword: '',
+    prometheusPasswordConfigured:
+      cluster?.prometheusPasswordConfigured ?? false,
     enabled: cluster?.enabled ?? true,
     isDefault: cluster?.isDefault ?? false,
     inCluster: cluster?.inCluster ?? false,
@@ -97,8 +107,16 @@ function ClusterDialogContent({
         inCluster: formData.inCluster,
         config: formData.config.trim(),
         prometheusURL: formData.prometheusURL.trim(),
+        prometheusUsername: formData.prometheusUsername.trim(),
+        prometheusPassword: formData.prometheusPassword,
       }),
-    [formData.inCluster, formData.config, formData.prometheusURL]
+    [
+      formData.inCluster,
+      formData.config,
+      formData.prometheusURL,
+      formData.prometheusUsername,
+      formData.prometheusPassword,
+    ]
   )
 
   const canTestConnection =
@@ -108,9 +126,24 @@ function ClusterDialogContent({
   const isConnectionVerified =
     testStatus === 'success' && testedSignature === connectionSignature
 
+  // The form also tracks local-only state (prometheusPasswordConfigured), so
+  // build the request payload explicitly instead of forwarding the whole form.
+  const buildPayload = (): ClusterUpdateRequest => ({
+    id: formData.id,
+    name: formData.name,
+    description: formData.description,
+    config: formData.config,
+    prometheusURL: formData.prometheusURL,
+    prometheusUsername: formData.prometheusUsername,
+    prometheusPassword: formData.prometheusPassword,
+    enabled: formData.enabled,
+    isDefault: formData.isDefault,
+    inCluster: formData.inCluster,
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
+    onSubmit(buildPayload())
   }
 
   const handleChange = (field: string, value: string | boolean) => {
@@ -121,7 +154,13 @@ function ClusterDialogContent({
         : String(formData[field as keyof typeof formData])
 
     if (
-      ['config', 'prometheusURL', 'inCluster'].includes(field) &&
+      [
+        'config',
+        'prometheusURL',
+        'prometheusUsername',
+        'prometheusPassword',
+        'inCluster',
+      ].includes(field) &&
       currentValue !== nextValue
     ) {
       setTestStatus('idle')
@@ -144,7 +183,7 @@ function ClusterDialogContent({
     setTestMessage('')
 
     try {
-      const result = await onTestConnection(formData)
+      const result = await onTestConnection(buildPayload())
       setTestedSignature(connectionSignature)
       setTestStatus('success')
       setTestMessage(
@@ -310,6 +349,86 @@ function ClusterDialogContent({
             type="url"
           />
         </div>
+
+        {formData.prometheusURL.trim() !== '' && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="prometheus-username">
+                {t(
+                  'clusterManagement.form.prometheusUsername.label',
+                  'Username'
+                )}
+              </Label>
+              <Input
+                id="prometheus-username"
+                value={formData.prometheusUsername}
+                onChange={(e) =>
+                  handleChange('prometheusUsername', e.target.value)
+                }
+                autoComplete="off"
+                placeholder={t(
+                  'clusterManagement.form.prometheusUsername.placeholder',
+                  'Optional'
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="prometheus-password">
+                  {t(
+                    'clusterManagement.form.prometheusPassword.label',
+                    'Password'
+                  )}
+                </Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                      aria-label={t(
+                        'clusterManagement.form.prometheusPassword.label',
+                        'Password'
+                      )}
+                    >
+                      <IconInfoCircle className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    className="max-w-xs leading-relaxed"
+                  >
+                    {t(
+                      'clusterManagement.form.prometheusPassword.help',
+                      'Optional. Fill in only when Prometheus is protected by HTTP basic auth. The stored password is never displayed; leave empty to keep the current one.'
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Input
+                id="prometheus-password"
+                type="password"
+                value={formData.prometheusPassword}
+                onChange={(e) =>
+                  handleChange('prometheusPassword', e.target.value)
+                }
+                autoComplete="new-password"
+                disabled={formData.prometheusUsername.trim() === ''}
+                placeholder={
+                  formData.prometheusPasswordConfigured
+                    ? t(
+                        'clusterManagement.form.prometheusPassword.keepPlaceholder',
+                        'Leave empty to keep current password'
+                      )
+                    : t(
+                        'clusterManagement.form.prometheusPassword.placeholder',
+                        'Optional'
+                      )
+                }
+              />
+            </div>
+          </div>
+        )}
 
         {/* Cluster Status Controls */}
         <div className="space-y-4 border-t pt-4">

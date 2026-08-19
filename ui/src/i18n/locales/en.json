@@ -904,6 +904,16 @@
         "label": "Prometheus URL",
         "help": "Optional. Used to enable Prometheus-based monitoring features such as overview history charts and Pod metrics. If left empty, Kite will try to discover a Prometheus service in the cluster automatically."
       },
+      "prometheusUsername": {
+        "label": "Username",
+        "placeholder": "Optional"
+      },
+      "prometheusPassword": {
+        "label": "Password",
+        "placeholder": "Optional",
+        "keepPlaceholder": "Leave empty to keep current password",
+        "help": "Optional. Fill in only when Prometheus is protected by HTTP basic auth. The stored password is never displayed; leave empty to keep the current one."
+      },
       "enabled": {
         "label": "Enable Cluster"
       },

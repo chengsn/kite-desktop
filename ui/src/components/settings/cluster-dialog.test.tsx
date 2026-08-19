@@ -150,4 +150,164 @@ describe('ClusterDialog', () => {
     )
     await waitFor(() => expect(saveButton).toBeEnabled())
   })
+
+  it('hides the Prometheus credentials until a URL is set', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <ClusterDialog
+        open
+        onOpenChange={() => {}}
+        onSubmit={() => {}}
+        onTestConnection={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByLabelText('Username', { selector: 'input' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Password', { selector: 'input' })).not.toBeInTheDocument()
+
+    await user.type(
+      screen.getByLabelText('Prometheus URL', { selector: 'input' }),
+      'https://prometheus.example.com'
+    )
+
+    expect(screen.getByLabelText('Username', { selector: 'input' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Password', { selector: 'input' })).toBeInTheDocument()
+  })
+
+  it('submits Prometheus basic auth credentials', async () => {
+    const user = userEvent.setup()
+    const onSubmit = vi.fn()
+    const onTestConnection = vi
+      .fn()
+      .mockResolvedValue({ message: 'ok', version: 'v1.31.0' })
+
+    render(
+      <ClusterDialog
+        open
+        onOpenChange={() => {}}
+        onSubmit={onSubmit}
+        onTestConnection={onTestConnection}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Cluster Name *'), 'dev-cluster')
+    await user.type(screen.getByLabelText('Kubeconfig *'), 'apiVersion: v1')
+    await user.type(
+      screen.getByLabelText('Prometheus URL', { selector: 'input' }),
+      'https://prometheus.example.com'
+    )
+    await user.type(screen.getByLabelText('Username', { selector: 'input' }), 'admin')
+    await user.type(screen.getByLabelText('Password', { selector: 'input' }), 's3cret')
+
+    await user.click(screen.getByRole('button', { name: 'Test Connection' }))
+    await waitFor(() => expect(onTestConnection).toHaveBeenCalledTimes(1))
+
+    await waitFor(() =>
+      expect(onTestConnection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prometheusURL: 'https://prometheus.example.com',
+          prometheusUsername: 'admin',
+          prometheusPassword: 's3cret',
+        })
+      )
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Add Cluster' }))
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prometheusURL: 'https://prometheus.example.com',
+          prometheusUsername: 'admin',
+          prometheusPassword: 's3cret',
+        })
+      )
+    )
+    // Local-only state must never reach the API payload.
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty(
+      'prometheusPasswordConfigured'
+    )
+  })
+
+  it('keeps the stored password when editing without retyping it', async () => {
+    const user = userEvent.setup()
+    const onTestConnection = vi
+      .fn()
+      .mockResolvedValue({ message: 'ok', version: 'v1.31.0' })
+
+    render(
+      <ClusterDialog
+        open
+        cluster={{
+          id: 7,
+          name: 'prod',
+          description: '',
+          enabled: true,
+          inCluster: false,
+          isDefault: false,
+          createdAt: '',
+          updatedAt: '',
+          prometheusURL: 'https://prometheus.example.com',
+          prometheusUsername: 'admin',
+          prometheusPasswordConfigured: true,
+        }}
+        onOpenChange={() => {}}
+        onSubmit={() => {}}
+        onTestConnection={onTestConnection}
+      />
+    )
+
+    const passwordInput = screen.getByLabelText('Password', { selector: 'input' })
+    expect(passwordInput).toHaveValue('')
+    expect(passwordInput).toHaveAttribute(
+      'placeholder',
+      'Leave empty to keep current password'
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Test Connection' }))
+
+    await waitFor(() =>
+      expect(onTestConnection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prometheusUsername: 'admin',
+          prometheusPassword: '',
+        })
+      )
+    )
+  })
+
+  it('invalidates a successful connection test when credentials change', async () => {
+    const user = userEvent.setup()
+    const onTestConnection = vi
+      .fn()
+      .mockResolvedValue({ message: 'ok', version: 'v1.31.0' })
+
+    render(
+      <ClusterDialog
+        open
+        onOpenChange={() => {}}
+        onSubmit={() => {}}
+        onTestConnection={onTestConnection}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Cluster Name *'), 'dev-cluster')
+    await user.type(screen.getByLabelText('Kubeconfig *'), 'apiVersion: v1')
+    await user.type(
+      screen.getByLabelText('Prometheus URL', { selector: 'input' }),
+      'https://prometheus.example.com'
+    )
+    await user.type(screen.getByLabelText('Username', { selector: 'input' }), 'admin')
+    await user.type(screen.getByLabelText('Password', { selector: 'input' }), 'secret')
+
+    await user.click(screen.getByRole('button', { name: 'Test Connection' }))
+
+    const addButton = screen.getByRole('button', { name: 'Add Cluster' })
+    await waitFor(() => expect(addButton).toBeEnabled())
+
+    await user.type(screen.getByLabelText('Password', { selector: 'input' }), '-changed')
+
+    await waitFor(() => expect(addButton).toBeDisabled())
+  })
 })

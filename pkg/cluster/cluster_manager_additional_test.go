@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/chengsn/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/prometheus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
@@ -249,14 +250,14 @@ func TestGetClientSet(t *testing.T) {
 
 func TestBuildClientSet(t *testing.T) {
 	t.Run("uses in-cluster constructor", func(t *testing.T) {
-		restoreFromConfig := stubCreateClientSetFromConfig(func(name, content, prometheusURL string) (*ClientSet, error) {
+		restoreFromConfig := stubCreateClientSetFromConfig(func(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 			t.Fatalf("createClientSetFromConfig() unexpectedly called with name=%q content=%q prometheusURL=%q", name, content, prometheusURL)
 			return nil, nil
 		})
 		defer restoreFromConfig()
 
 		inClusterCalled := false
-		restoreInClusterCalled := stubCreateClientSetInCluster(func(name, prometheusURL string) (*ClientSet, error) {
+		restoreInClusterCalled := stubCreateClientSetInCluster(func(name, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 			inClusterCalled = true
 			if name != "cluster-a" {
 				t.Fatalf("name = %q, want %q", name, "cluster-a")
@@ -285,14 +286,14 @@ func TestBuildClientSet(t *testing.T) {
 	})
 
 	t.Run("uses kubeconfig constructor", func(t *testing.T) {
-		restoreInCluster := stubCreateClientSetInCluster(func(name, prometheusURL string) (*ClientSet, error) {
+		restoreInCluster := stubCreateClientSetInCluster(func(name, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 			t.Fatalf("createClientSetInCluster() unexpectedly called with name=%q prometheusURL=%q", name, prometheusURL)
 			return nil, nil
 		})
 		defer restoreInCluster()
 
 		fromConfigCalled := false
-		restoreFromConfigCalled := stubCreateClientSetFromConfig(func(name, content, prometheusURL string) (*ClientSet, error) {
+		restoreFromConfigCalled := stubCreateClientSetFromConfig(func(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 			fromConfigCalled = true
 			if name != "cluster-b" {
 				t.Fatalf("name = %q, want %q", name, "cluster-b")
@@ -330,7 +331,7 @@ func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
 }
 
-func stubCreateClientSetInCluster(fn func(name, prometheusURL string) (*ClientSet, error)) func() {
+func stubCreateClientSetInCluster(fn func(name, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error)) func() {
 	previous := createClientSetInClusterFunc
 	createClientSetInClusterFunc = fn
 	return func() {
@@ -338,7 +339,7 @@ func stubCreateClientSetInCluster(fn func(name, prometheusURL string) (*ClientSe
 	}
 }
 
-func stubCreateClientSetFromConfig(fn func(name, content, prometheusURL string) (*ClientSet, error)) func() {
+func stubCreateClientSetFromConfig(fn func(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error)) func() {
 	previous := createClientSetFromConfigFunc
 	createClientSetFromConfigFunc = fn
 	return func() {

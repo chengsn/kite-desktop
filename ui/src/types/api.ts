@@ -384,6 +384,9 @@ export interface Cluster {
   createdAt: string
   updatedAt: string
   prometheusURL?: string
+  prometheusUsername?: string
+  /** Whether a Prometheus password is stored. The secret itself is never returned. */
+  prometheusPasswordConfigured?: boolean
   error?: string
 }
 

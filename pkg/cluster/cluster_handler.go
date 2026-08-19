@@ -12,6 +12,7 @@ import (
 
 	"github.com/chengsn/kite-desktop/pkg/common"
 	"github.com/chengsn/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/prometheus"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"k8s.io/client-go/kubernetes"
@@ -20,14 +21,48 @@ import (
 )
 
 type clusterRequest struct {
-	ID            uint   `json:"id"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	Config        string `json:"config"`
-	PrometheusURL string `json:"prometheusURL"`
-	InCluster     bool   `json:"inCluster"`
-	IsDefault     bool   `json:"isDefault"`
-	Enabled       bool   `json:"enabled"`
+	ID                 uint    `json:"id"`
+	Name               string  `json:"name"`
+	Description        string  `json:"description"`
+	Config             string  `json:"config"`
+	PrometheusURL      string  `json:"prometheusURL"`
+	PrometheusUsername *string `json:"prometheusUsername"`
+	PrometheusPassword *string `json:"prometheusPassword"`
+	InCluster          bool    `json:"inCluster"`
+	IsDefault          bool    `json:"isDefault"`
+	Enabled            bool    `json:"enabled"`
+}
+
+// resolvePrometheusAuth merges the request credentials with the ones already
+// stored for the cluster. The stored username and password are only replaced
+// when the request carries a value, so the UI can submit the form without ever
+// reading the secret back. Clearing the URL removes the credentials entirely.
+func resolvePrometheusAuth(req *clusterRequest, existing *model.Cluster) (prometheus.BasicAuth, error) {
+	if strings.TrimSpace(req.PrometheusURL) == "" {
+		return prometheus.BasicAuth{}, nil
+	}
+
+	var username, password string
+	if existing != nil {
+		username = existing.PrometheusUsername
+		password = string(existing.PrometheusPassword)
+	}
+	if req.PrometheusUsername != nil {
+		username = strings.TrimSpace(*req.PrometheusUsername)
+	}
+	if req.PrometheusPassword != nil && *req.PrometheusPassword != "" {
+		password = *req.PrometheusPassword
+	}
+
+	// Basic auth needs both halves; without a username the credentials are cleared.
+	if username == "" {
+		return prometheus.BasicAuth{}, nil
+	}
+	if password == "" {
+		return prometheus.BasicAuth{}, fmt.Errorf("prometheusPassword is required when prometheusUsername is set")
+	}
+
+	return prometheus.BasicAuth{Username: username, Password: password}, nil
 }
 
 var clusterConnectionTester = validateClusterConnection
@@ -89,14 +124,16 @@ func (cm *ClusterManager) GetClusterList(c *gin.Context) {
 	result := make([]gin.H, 0, len(clusters))
 	for _, cluster := range clusters {
 		clusterInfo := gin.H{
-			"id":            cluster.ID,
-			"name":          cluster.Name,
-			"description":   cluster.Description,
-			"enabled":       cluster.Enable,
-			"inCluster":     cluster.InCluster,
-			"isDefault":     cluster.IsDefault,
-			"prometheusURL": cluster.PrometheusURL,
-			"config":        "",
+			"id":                           cluster.ID,
+			"name":                         cluster.Name,
+			"description":                  cluster.Description,
+			"enabled":                      cluster.Enable,
+			"inCluster":                    cluster.InCluster,
+			"isDefault":                    cluster.IsDefault,
+			"prometheusURL":                cluster.PrometheusURL,
+			"prometheusUsername":           cluster.PrometheusUsername,
+			"prometheusPasswordConfigured": string(cluster.PrometheusPassword) != "",
+			"config":                       "",
 		}
 
 		if clientSet, exists := cm.clusters[cluster.Name]; exists {
@@ -140,14 +177,22 @@ func (cm *ClusterManager) CreateCluster(c *gin.Context) {
 		}
 	}
 
+	auth, err := resolvePrometheusAuth(&req, nil)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	cluster := &model.Cluster{
-		Name:          req.Name,
-		Description:   req.Description,
-		Config:        model.SecretString(req.Config),
-		PrometheusURL: req.PrometheusURL,
-		InCluster:     req.InCluster,
-		IsDefault:     req.IsDefault,
-		Enable:        true,
+		Name:               req.Name,
+		Description:        req.Description,
+		Config:             model.SecretString(req.Config),
+		PrometheusURL:      req.PrometheusURL,
+		PrometheusUsername: auth.Username,
+		PrometheusPassword: model.SecretString(auth.Password),
+		InCluster:          req.InCluster,
+		IsDefault:          req.IsDefault,
+		Enable:             true,
 	}
 
 	if err := model.AddCluster(cluster); err != nil {
@@ -195,12 +240,20 @@ func (cm *ClusterManager) UpdateCluster(c *gin.Context) {
 		}
 	}
 
+	auth, err := resolvePrometheusAuth(&req, cluster)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	updates := map[string]interface{}{
-		"description":    req.Description,
-		"prometheus_url": req.PrometheusURL,
-		"in_cluster":     req.InCluster,
-		"is_default":     req.IsDefault,
-		"enable":         req.Enabled,
+		"description":         req.Description,
+		"prometheus_url":      req.PrometheusURL,
+		"prometheus_username": auth.Username,
+		"prometheus_password": model.SecretString(auth.Password),
+		"in_cluster":          req.InCluster,
+		"is_default":          req.IsDefault,
+		"enable":              req.Enabled,
 	}
 
 	if req.Name != "" && req.Name != cluster.Name {
@@ -386,28 +439,33 @@ func (cm *ClusterManager) TestClusterConnection(c *gin.Context) {
 		return
 	}
 
-	config := strings.TrimSpace(req.Config)
-
 	clusterName := strings.TrimSpace(req.Name)
 	if clusterName == "" {
 		clusterName = "test-connection"
 	}
 
-	prometheusURL := strings.TrimSpace(req.PrometheusURL)
-	if !req.InCluster && config == "" && req.ID > 0 {
-		existingCluster, err := model.GetClusterByID(req.ID)
+	// Editing an existing cluster only sends the fields the user touched, so the
+	// stored kubeconfig, Prometheus URL and credentials fill in the blanks.
+	var existingCluster *model.Cluster
+	if req.ID > 0 {
+		existing, err := model.GetClusterByID(req.ID)
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"error": "cluster not found"})
-			} else {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
 			}
-			return
+			if !req.InCluster && strings.TrimSpace(req.Config) == "" {
+				c.JSON(http.StatusNotFound, gin.H{"error": "cluster not found"})
+				return
+			}
+		} else {
+			existingCluster = existing
 		}
+	}
+
+	config := strings.TrimSpace(req.Config)
+	if !req.InCluster && config == "" && existingCluster != nil {
 		config = strings.TrimSpace(string(existingCluster.Config))
-		if prometheusURL == "" {
-			prometheusURL = existingCluster.PrometheusURL
-		}
 	}
 
 	if !req.InCluster && config == "" {
@@ -415,11 +473,26 @@ func (cm *ClusterManager) TestClusterConnection(c *gin.Context) {
 		return
 	}
 
+	prometheusURL := strings.TrimSpace(req.PrometheusURL)
+	if prometheusURL == "" && existingCluster != nil {
+		prometheusURL = existingCluster.PrometheusURL
+	}
+
+	authReq := req
+	authReq.PrometheusURL = prometheusURL
+	auth, err := resolvePrometheusAuth(&authReq, existingCluster)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	cluster := &model.Cluster{
-		Name:          clusterName,
-		Config:        model.SecretString(config),
-		PrometheusURL: prometheusURL,
-		InCluster:     req.InCluster,
+		Name:               clusterName,
+		Config:             model.SecretString(config),
+		PrometheusURL:      prometheusURL,
+		PrometheusUsername: auth.Username,
+		PrometheusPassword: model.SecretString(auth.Password),
+		InCluster:          req.InCluster,
 	}
 
 	cs, err := clusterConnectionTester(cluster)

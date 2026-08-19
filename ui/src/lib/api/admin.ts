@@ -20,6 +20,8 @@ export interface ClusterCreateRequest {
   description?: string
   config?: string
   prometheusURL?: string
+  prometheusUsername?: string
+  prometheusPassword?: string
   inCluster?: boolean
   isDefault?: boolean
 }

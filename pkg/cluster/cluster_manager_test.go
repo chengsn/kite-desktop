@@ -7,6 +7,7 @@ import (
 
 	"github.com/chengsn/kite-desktop/pkg/kube"
 	"github.com/chengsn/kite-desktop/pkg/model"
+	"github.com/chengsn/kite-desktop/pkg/prometheus"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -177,7 +178,7 @@ func TestSyncClustersDoesNotBlockOnStalledClusterBuild(t *testing.T) {
 		clusterBuildTimeout = originalTimeout
 	})
 	clusterBuildTimeout = 20 * time.Millisecond
-	createClientSetFromConfigFunc = func(name, content, prometheusURL string) (*ClientSet, error) {
+	createClientSetFromConfigFunc = func(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 		if name == "stalled" {
 			select {}
 		}
@@ -222,7 +223,7 @@ func TestSyncClustersRetriesClusterAfterPreviousBuildError(t *testing.T) {
 		createClientSetFromConfigFunc = originalBuilder
 	})
 	buildAttempts := 0
-	createClientSetFromConfigFunc = func(name, content, prometheusURL string) (*ClientSet, error) {
+	createClientSetFromConfigFunc = func(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 		buildAttempts++
 		if buildAttempts == 1 {
 			return nil, assert.AnError

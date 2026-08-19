@@ -59,6 +59,9 @@ function getClusterConnectionTestPayload(
     description: cluster.description,
     config: '',
     prometheusURL: cluster.prometheusURL,
+    // The stored password is never sent to the client; the backend reuses the
+    // saved one when prometheusPassword is omitted.
+    prometheusUsername: cluster.prometheusUsername,
     inCluster: cluster.inCluster,
     isDefault: cluster.isDefault,
   }

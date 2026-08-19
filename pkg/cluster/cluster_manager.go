@@ -28,6 +28,8 @@ type ClientSet struct {
 	DiscoveredPrometheusURL string
 	config                  string
 	prometheusURL           string
+	prometheusUsername      string
+	prometheusPassword      string
 }
 
 type ClusterManager struct {
@@ -53,22 +55,22 @@ var (
 	clusterBuildTimeout         = 25 * time.Second
 )
 
-func createClientSetInCluster(name, prometheusURL string) (*ClientSet, error) {
+func createClientSetInCluster(name, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, formatClusterConnectionError(err)
 	}
 
-	return newClientSet(name, config, prometheusURL)
+	return newClientSet(name, config, prometheusURL, auth)
 }
 
-func createClientSetFromConfig(name, content, prometheusURL string) (*ClientSet, error) {
+func createClientSetFromConfig(name, content, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 	restConfig, err := clientcmd.RESTConfigFromKubeConfig([]byte(content))
 	if err != nil {
 		klog.Warningf("Failed to create REST config for cluster %s: %v", name, err)
 		return nil, formatClusterConnectionError(err)
 	}
-	cs, err := newClientSet(name, restConfig, prometheusURL)
+	cs, err := newClientSet(name, restConfig, prometheusURL, auth)
 	if err != nil {
 		return nil, err
 	}
@@ -77,15 +79,17 @@ func createClientSetFromConfig(name, content, prometheusURL string) (*ClientSet,
 	return cs, nil
 }
 
-func newClientSet(name string, k8sConfig *rest.Config, prometheusURL string) (*ClientSet, error) {
+func newClientSet(name string, k8sConfig *rest.Config, prometheusURL string, auth prometheus.BasicAuth) (*ClientSet, error) {
 	k8sConfig = rest.CopyConfig(k8sConfig)
 	if k8sConfig.Timeout <= 0 {
 		k8sConfig.Timeout = clusterClientRequestTimeout
 	}
 
 	cs := &ClientSet{
-		Name:          name,
-		prometheusURL: prometheusURL,
+		Name:               name,
+		prometheusURL:      prometheusURL,
+		prometheusUsername: auth.Username,
+		prometheusPassword: auth.Password,
 	}
 	var err error
 	cs.K8sClient, err = kube.NewClient(k8sConfig)
@@ -101,15 +105,25 @@ func newClientSet(name string, k8sConfig *rest.Config, prometheusURL string) (*C
 		}
 	}
 	if prometheusURL != "" {
-		var rt = http.DefaultTransport
-		var err error
+		var rt http.RoundTripper = http.DefaultTransport
+		useK8sProxy := false
 		if isClusterLocalURL(prometheusURL) {
-			rt, err = createK8sProxyTransport(k8sConfig, prometheusURL)
+			proxyTransport, err := createK8sProxyTransport(k8sConfig, prometheusURL)
 			if err != nil {
 				klog.Warningf("Failed to create k8s proxy transport for cluster %s: %v, using direct connection", name, err)
 			} else {
+				rt = proxyTransport
+				useK8sProxy = true
 				klog.Infof("Using k8s API proxy for Prometheus in cluster %s", name)
 			}
+		}
+		// The in-cluster proxy authenticates with the kubeconfig credentials and
+		// forwards its own Authorization header, so basic auth only applies when
+		// Kite reaches Prometheus directly.
+		if useK8sProxy && auth.Configured() {
+			klog.Warningf("Prometheus basic auth is configured for cluster %s but the URL is cluster-local; credentials are ignored because requests are proxied through the Kubernetes API server", name)
+		} else {
+			rt = prometheus.NewBasicAuthRoundTripper(auth, rt)
 		}
 		cs.PromClient, err = prometheus.NewClientWithRoundTripper(prometheusURL, rt)
 		if err != nil {
@@ -391,6 +405,12 @@ func shouldUpdateCluster(cs *ClientSet, cluster *model.Cluster) bool {
 		return true
 	}
 
+	// prometheus basic auth change
+	if cs.prometheusUsername != cluster.PrometheusUsername || cs.prometheusPassword != string(cluster.PrometheusPassword) {
+		klog.Infof("Prometheus credentials changed for cluster %s, updating", cluster.Name)
+		return true
+	}
+
 	// k8s version change
 	// TODO: Replace direct ClientSet.Discovery() call with a small DiscoveryInterface.
 	// current code depends on *kubernetes.Clientset, which is hard to mock in tests.
@@ -406,10 +426,14 @@ func shouldUpdateCluster(cs *ClientSet, cluster *model.Cluster) bool {
 }
 
 func buildClientSet(cluster *model.Cluster) (*ClientSet, error) {
-	if cluster.InCluster {
-		return createClientSetInClusterFunc(cluster.Name, cluster.PrometheusURL)
+	auth := prometheus.BasicAuth{
+		Username: cluster.PrometheusUsername,
+		Password: string(cluster.PrometheusPassword),
 	}
-	return createClientSetFromConfigFunc(cluster.Name, string(cluster.Config), cluster.PrometheusURL)
+	if cluster.InCluster {
+		return createClientSetInClusterFunc(cluster.Name, cluster.PrometheusURL, auth)
+	}
+	return createClientSetFromConfigFunc(cluster.Name, string(cluster.Config), cluster.PrometheusURL, auth)
 }
 
 func NewClusterManager() (*ClusterManager, error) {
