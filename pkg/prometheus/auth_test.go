@@ -55,9 +55,13 @@ func TestNewBasicAuthRoundTripperSetsAuthorizationHeader(t *testing.T) {
 	rt := NewBasicAuthRoundTripper(BasicAuth{Username: "admin", Password: "s3cret"}, inner)
 
 	req := httptest.NewRequest(http.MethodGet, "http://prometheus.example.com/api/v1/query", nil)
-	if _, err := rt.RoundTrip(req); err != nil {
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
 		t.Fatalf("RoundTrip() error = %v", err)
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	want := "Basic " + basicAuthEncoding("admin", "s3cret")
 	if inner.gotAuthorization != want {
@@ -74,9 +78,13 @@ func TestNewBasicAuthRoundTripperKeepsExistingAuthorization(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "http://prometheus.example.com/api/v1/query", nil)
 	req.Header.Set("Authorization", "Bearer kubeconfig-token")
-	if _, err := rt.RoundTrip(req); err != nil {
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
 		t.Fatalf("RoundTrip() error = %v", err)
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if inner.gotAuthorization != "Bearer kubeconfig-token" {
 		t.Fatalf("Authorization = %q, want the existing header to win", inner.gotAuthorization)
@@ -92,9 +100,13 @@ func TestNewBasicAuthRoundTripperWithoutCredentialsPassesThrough(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "http://prometheus.example.com/api/v1/query", nil)
-	if _, err := rt.RoundTrip(req); err != nil {
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
 		t.Fatalf("RoundTrip() error = %v", err)
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	if inner.gotAuthorization != "" {
 		t.Fatalf("Authorization = %q, want empty", inner.gotAuthorization)
 	}
@@ -107,7 +119,7 @@ func TestNewBasicAuthRoundTripperDefaultsTransport(t *testing.T) {
 	if !ok {
 		t.Fatalf("RoundTripper type = %T, want *basicAuthRoundTripper", rt)
 	}
-	if authRT.rt != http.RoundTripper(http.DefaultTransport) {
+	if authRT.rt != http.DefaultTransport {
 		t.Fatalf("inner transport = %T, want http.DefaultTransport", authRT.rt)
 	}
 }

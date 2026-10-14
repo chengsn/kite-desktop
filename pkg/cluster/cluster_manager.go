@@ -105,7 +105,7 @@ func newClientSet(name string, k8sConfig *rest.Config, prometheusURL string, aut
 		}
 	}
 	if prometheusURL != "" {
-		var rt http.RoundTripper = http.DefaultTransport
+		var rt = http.DefaultTransport
 		useK8sProxy := false
 		if isClusterLocalURL(prometheusURL) {
 			proxyTransport, err := createK8sProxyTransport(k8sConfig, prometheusURL)
