@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import i18n from '@/i18n'
 import { FileText, Tags } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -86,9 +87,11 @@ export function renderMetadataTooltipContent(
         <thead>
           <tr className="border-b border-white/30">
             <th className="border-r border-white/25 px-3 py-1.5 font-semibold">
-              键
+              {i18n.t('detail.fields.key')}
             </th>
-            <th className="px-3 py-1.5 font-semibold">值</th>
+            <th className="px-3 py-1.5 font-semibold">
+              {i18n.t('detail.fields.value')}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -103,7 +106,9 @@ export function renderMetadataTooltipContent(
         </tbody>
       </table>
       {hiddenCount > 0 ? (
-        <div className="pt-1 text-right opacity-90">+{hiddenCount} more</div>
+        <div className="pt-1 text-right opacity-90">
+          {i18n.t('common.moreCount', { count: hiddenCount })}
+        </div>
       ) : null}
     </div>
   )

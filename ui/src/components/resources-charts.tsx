@@ -10,6 +10,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 
+function toPercentage(value: number, total: number) {
+  if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) {
+    return 0
+  }
+
+  return (value / total) * 100
+}
+
 export interface ResourceChartsProps {
   data?: OverviewData['resource']
   isLoading: boolean
@@ -31,8 +39,8 @@ export function ResourceCharts(props: ResourceChartsProps) {
         request: cpu.requested / 1000,
         limit: cpu.limited / 1000,
         total: cpu.allocatable / 1000,
-        requestPercentage: (cpu.requested / cpu.allocatable) * 100,
-        limitPercentage: (cpu.limited / cpu.allocatable) * 100,
+        requestPercentage: toPercentage(cpu.requested, cpu.allocatable),
+        limitPercentage: toPercentage(cpu.limited, cpu.allocatable),
         unit: 'cores',
       },
       {
@@ -40,8 +48,8 @@ export function ResourceCharts(props: ResourceChartsProps) {
         request: memory.requested / 1024 / 1024 / 1024 / 1024,
         limit: memory.limited / 1024 / 1024 / 1024 / 1024,
         total: memory.allocatable / 1024 / 1024 / 1024 / 1024,
-        requestPercentage: (memory.requested / memory.allocatable) * 100,
-        limitPercentage: (memory.limited / memory.allocatable) * 100,
+        requestPercentage: toPercentage(memory.requested, memory.allocatable),
+        limitPercentage: toPercentage(memory.limited, memory.allocatable),
         unit: 'GiB',
       },
     ]
@@ -75,7 +83,9 @@ export function ResourceCharts(props: ResourceChartsProps) {
         </CardHeader>
         <div className="flex flex-col items-center justify-center h-64 gap-2">
           <p className="text-sm text-muted-foreground">
-            {error instanceof Error ? error.message : 'Unknown error occurred'}
+            {error instanceof Error
+              ? error.message
+              : t('overview.unknownError')}
           </p>
         </div>
       </Card>
@@ -109,7 +119,7 @@ export function ResourceCharts(props: ResourceChartsProps) {
                   <div>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span className="font-medium text-blue-600">
-                        Requests
+                        {t('monitoring.requests')}
                       </span>
                       <span>
                         {resource.request.toFixed(1)} {resource.unit}
@@ -139,7 +149,7 @@ export function ResourceCharts(props: ResourceChartsProps) {
                   <div>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span className="font-medium text-orange-600">
-                        Limits
+                        {t('monitoring.limits')}
                       </span>
                       <span>
                         {resource.limit.toFixed(1)} {resource.unit}

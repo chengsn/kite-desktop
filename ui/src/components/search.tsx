@@ -1,12 +1,15 @@
 import { Search as SearchIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { getModifierKeyLabel } from '@/lib/platform'
+
 import { useGlobalSearch } from './global-search-provider'
 import { Button } from './ui/button'
 
 export function Search() {
   const { t } = useTranslation()
   const { openSearch } = useGlobalSearch()
+  const modifierKey = getModifierKeyLabel()
 
   return (
     <Button
@@ -18,7 +21,7 @@ export function Search() {
       <span className="flex-1 text-left">{t('searchButton.placeholder')}</span>
       <div className="flex items-center gap-1 text-xs">
         <kbd className="bg-background text-muted-foreground pointer-events-none flex h-5 items-center justify-center gap-1 rounded border px-1 font-sans text-[0.7rem] font-medium select-none [_svg:not([class*='size-'])]:size-3">
-          ⌘
+          {modifierKey}
         </kbd>
         <kbd className="bg-background text-muted-foreground pointer-events-none flex h-5 items-center justify-center gap-1 rounded border px-1 font-sans text-[0.7rem] font-medium select-none [&_svg:not([class*='size-'])]:size-3 aspect-square">
           K

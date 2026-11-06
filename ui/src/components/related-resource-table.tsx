@@ -216,7 +216,12 @@ function RelatedResourceCell({ rs }: { rs: RelatedResources }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="font-medium app-link cursor-pointer">{rs.name}</div>
+        <button
+          type="button"
+          className="font-medium app-link cursor-pointer text-left"
+        >
+          {rs.name}
+        </button>
       </DialogTrigger>
       <DialogContent className="!h-[calc(100dvh-1rem)] !max-w-[calc(100vw-1rem)] flex min-h-0 flex-col md:!h-[80%] md:!max-w-[60%]">
         <DialogHeader className="flex flex-row justify-between items-center">

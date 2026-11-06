@@ -57,11 +57,14 @@ export function SiteHeader() {
           <DynamicBreadcrumb />
           <div className="ml-auto flex items-center gap-2">
             <Search />
-            <Plus
-              className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-foreground"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setCreateDialogOpen(true)}
               aria-label={t('siteHeader.createNewResource')}
-            />
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
             {canManageSettings && kubectlEnabled && (
               <button
                 onClick={() => openTerminal('button')}

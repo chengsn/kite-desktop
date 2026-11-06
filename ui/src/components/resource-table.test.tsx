@@ -1,7 +1,7 @@
 import '@/i18n'
 
 import { createColumnHelper } from '@tanstack/react-table'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import i18n from 'i18next'
 import { Deployment } from 'kubernetes-types/apps/v1'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,6 +9,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ResourceTable } from './resource-table'
 
 const deleteResourceMock = vi.fn()
+
+const demoDeployment = {
+  metadata: {
+    name: 'demo',
+    namespace: 'default',
+    uid: 'deploy-1',
+  },
+}
+let resourcesData = [demoDeployment]
 
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api')
@@ -18,15 +27,7 @@ vi.mock('@/lib/api', async () => {
     deleteResource: (...args: unknown[]) => deleteResourceMock(...args),
     useResources: () => ({
       isLoading: false,
-      data: [
-        {
-          metadata: {
-            name: 'demo',
-            namespace: 'default',
-            uid: 'deploy-1',
-          },
-        },
-      ],
+      data: resourcesData,
       isError: false,
       error: null,
       refetch: vi.fn(),
@@ -53,8 +54,48 @@ describe('ResourceTable batch delete confirmation', () => {
       unobserve() {}
     } as unknown as new (callback: ResizeObserverCallback) => ResizeObserver
     localStorage.setItem('current-cluster', 'test-cluster')
+    resourcesData = [demoDeployment]
     deleteResourceMock.mockReset()
     deleteResourceMock.mockResolvedValue(undefined)
+  })
+
+  it('keeps the table header and lets the empty state size the scroller', async () => {
+    await i18n.changeLanguage('en')
+    resourcesData = []
+
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.name', {
+            header: 'Name',
+            cell: ({ row }) => row.original.metadata?.name,
+          }),
+        ]}
+      />
+    )
+
+    expect(
+      screen.getByRole('columnheader', { name: 'Name' })
+    ).toBeInTheDocument()
+    const emptyState = screen.getByText('No resources found')
+    expect(emptyState).toBeInTheDocument()
+
+    const scrollContainer = emptyState.closest('.overflow-auto')
+    expect(scrollContainer).not.toBeNull()
+
+    await act(async () => {
+      await new Promise((resolve) => {
+        window.requestAnimationFrame(() => resolve(null))
+      })
+    })
+
+    expect(scrollContainer).not.toHaveClass('min-h-[240px]')
+    expect(scrollContainer?.getAttribute('style') ?? '').not.toContain('height')
   })
 
   it('requires the global confirmation keyword before deleting selected rows', async () => {

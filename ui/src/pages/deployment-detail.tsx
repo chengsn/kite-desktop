@@ -675,7 +675,7 @@ export function DeploymentDetail(props: { namespace: string; name: string }) {
           },
           {
             value: 'history',
-            label: 'History',
+            label: t('detail.tabs.history'),
             content: (
               <ResourceHistoryTable
                 resourceType="deployments"
@@ -691,7 +691,7 @@ export function DeploymentDetail(props: { namespace: string; name: string }) {
                   value: 'volumes',
                   label: (
                     <>
-                      Volumes{' '}
+                      {t('detail.tabs.volumes')}{' '}
                       <Badge variant="secondary">
                         {deployment.spec.template.spec.volumes.length}
                       </Badge>

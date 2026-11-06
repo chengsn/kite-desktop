@@ -805,7 +805,7 @@ export function CronJobDetail(props: { namespace: string; name: string }) {
           },
           {
             value: 'history',
-            label: 'History',
+            label: t('detail.tabs.history'),
             content: (
               <ResourceHistoryTable
                 resourceType="cronjobs"
@@ -819,7 +819,7 @@ export function CronJobDetail(props: { namespace: string; name: string }) {
             ? [
                 {
                   value: 'volumes',
-                  label: 'Volumes',
+                  label: t('detail.tabs.volumes'),
                   content: (
                     <VolumeTable
                       namespace={namespace}

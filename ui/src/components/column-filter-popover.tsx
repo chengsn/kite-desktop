@@ -48,12 +48,19 @@ export function ColumnFilterPopover<TData>({
     >
       <PopoverTrigger asChild>
         <button
+          type="button"
+          aria-label={t('resourceTable.filterColumn', {
+            column:
+              typeof column.columnDef.header === 'string'
+                ? column.columnDef.header
+                : column.id,
+          })}
           className={cn(
             'inline-flex items-center justify-center rounded-sm p-0.5 transition-opacity',
             hasActiveFilter || open
               ? 'opacity-100 text-primary'
-              : 'opacity-0 group-hover/header:opacity-60 hover:!opacity-100',
-            'hover:bg-accent'
+              : 'opacity-0 group-hover/header:opacity-60 focus-visible:opacity-100 hover:!opacity-100',
+            'hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring'
           )}
         >
           <ListFilter className="h-3 w-3" />

@@ -582,7 +582,7 @@ export function StatefulSetDetail(props: { namespace: string; name: string }) {
                   value: 'volumes',
                   label: (
                     <>
-                      Volumes
+                      {t('detail.tabs.volumes')}
                       {spec.template.spec.volumes && (
                         <Badge variant="secondary">
                           {spec.template.spec.volumes.length}
@@ -630,7 +630,7 @@ export function StatefulSetDetail(props: { namespace: string; name: string }) {
           },
           {
             value: 'history',
-            label: 'History',
+            label: t('detail.tabs.history'),
             content: (
               <ResourceHistoryTable
                 resourceType="statefulsets"

@@ -221,7 +221,7 @@ export function NamespaceListPage() {
       { type: 'separator', key: 'namespace-operations-separator' },
       {
         key: 'edit-namespace',
-        label: t('namespaceList.editQuota', '配额编辑'),
+        label: t('namespaceList.editQuota'),
         icon: <Edit3 className="h-4 w-4" />,
         onSelect: () => setEditingNamespace(namespace),
       },

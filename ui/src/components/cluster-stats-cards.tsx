@@ -106,20 +106,23 @@ export function ClusterStatsCards({
                         stat.value
                       )}
                     </CardTitle>
-                    <div className="text-sm text-muted-foreground">
-                      {stat.subValue === undefined ||
-                      stat.subValue === stat.value ? (
-                        <div className="flex items-center gap-1">
-                          <IconCircleCheckFilled className="size-4 text-green-600 flex-shrink-0" />
-                          All ready
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <IconAlertCircleFilled className="size-4 text-red-600 flex-shrink-0" />
-                          {stat.value - (stat.subValue || 0)} Not Ready
-                        </div>
-                      )}
-                    </div>
+                    {stat.subValue !== undefined ? (
+                      <div className="text-sm text-muted-foreground">
+                        {stat.subValue === stat.value ? (
+                          <div className="flex items-center gap-1">
+                            <IconCircleCheckFilled className="size-4 text-green-600 flex-shrink-0" />
+                            {t('overview.allReady')}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <IconAlertCircleFilled className="size-4 text-red-600 flex-shrink-0" />
+                            {t('overview.notReadyCount', {
+                              count: stat.value - (stat.subValue || 0),
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

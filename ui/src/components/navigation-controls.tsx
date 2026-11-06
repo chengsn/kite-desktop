@@ -2,6 +2,7 @@ import { useNavigation } from '@/contexts/navigation-context'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { isMacPlatform } from '@/lib/platform'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -10,7 +11,7 @@ import {
 import { ShortcutTooltipContent } from '@/components/shortcut-tooltip-content'
 
 function getNavigationShortcutLabel(direction: 'back' | 'forward') {
-  if (typeof navigator !== 'undefined' && /mac/i.test(navigator.platform)) {
+  if (isMacPlatform()) {
     return direction === 'back' ? '⌘[' : '⌘]'
   }
 

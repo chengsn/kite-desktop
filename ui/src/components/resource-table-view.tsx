@@ -31,6 +31,8 @@ import {
   RowContextMenuItem,
 } from '@/components/row-context-menu'
 
+const STANDARD_PAGE_SIZES = [10, 20, 50, 100]
+
 interface ResourceTableViewProps<T> {
   table: TableInstance<T>
   columnCount: number
@@ -200,6 +202,9 @@ export function ResourceTableView<T>({
 
   const dataLength = data?.length ?? 0
   const resolvedAllPageSize = allPageSize ?? dataLength
+  const showAllPageSizeOption =
+    resolvedAllPageSize > 0 &&
+    !STANDARD_PAGE_SIZES.includes(resolvedAllPageSize)
   const rootRef = useRef<HTMLDivElement>(null)
   const tableShellRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
@@ -256,6 +261,10 @@ export function ResourceTableView<T>({
     }
   }, [dataLength, fitViewportHeight])
 
+  // A full-table state (loading/error/empty) sizes itself. Constraining the
+  // scroller to the measured viewport height would clip it on short windows.
+  const hasFullTableState = Boolean(emptyState)
+
   return (
     <div ref={rootRef} className={containerClassName}>
       <div ref={tableShellRef} className="rounded-lg border overflow-hidden">
@@ -264,116 +273,73 @@ export function ResourceTableView<T>({
             isLoading && dataLength > 0 ? 'opacity-75' : 'opacity-100'
           }`}
         >
-          {emptyState || (
-            <div
-              className={cn(
-                'relative overflow-auto scrollbar-hide',
-                fitViewportHeight ? 'min-h-[240px]' : maxBodyHeightClassName
-              )}
-              style={
-                fitViewportHeight && tableHeight
-                  ? { height: `${tableHeight}px` }
-                  : undefined
-              }
-            >
-              <Table>
-                <TableHeader className="bg-muted">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header, index) => (
-                        (() => {
-                          const alignment = (
-                            header.column.columnDef.meta as
-                              | { align?: ColumnAlignment }
-                              | undefined
-                          )?.align
-                          const canSort = header.column.getCanSort()
-                          const canFilter =
-                            header.column.getCanFilter() &&
-                            header.column.id !== 'select'
-                          const shouldOverlayControls =
-                            shouldOverlayHeaderControls(
-                              alignment,
-                              index,
-                              canSort,
-                              canFilter
-                            )
+          <div
+            className={cn(
+              'relative overflow-auto scrollbar-hide',
+              !hasFullTableState &&
+                (fitViewportHeight ? 'min-h-[240px]' : maxBodyHeightClassName)
+            )}
+            style={
+              !hasFullTableState && fitViewportHeight && tableHeight
+                ? { height: `${tableHeight}px` }
+                : undefined
+            }
+          >
+            <Table>
+              <TableHeader className="bg-muted">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header, index) => (
+                      (() => {
+                        const alignment = (
+                          header.column.columnDef.meta as
+                            | { align?: ColumnAlignment }
+                            | undefined
+                        )?.align
+                        const canSort = header.column.getCanSort()
+                        const canFilter =
+                          header.column.getCanFilter() &&
+                          header.column.id !== 'select'
+                        const shouldOverlayControls =
+                          shouldOverlayHeaderControls(
+                            alignment,
+                            index,
+                            canSort,
+                            canFilter
+                          )
 
-                          return (
-                            <TableHead
-                              key={header.id}
-                              className={cn(
-                                'group/header',
-                                getStickyColumnClassName(
-                                  index,
-                                  header.column.id,
-                                  alignment,
-                                  true
-                                )
-                              )}
-                            >
-                              {header.isPlaceholder ? null : shouldOverlayControls ? (
-                                <div className="flex items-center justify-center">
-                                  <div className="inline-flex items-center gap-1 whitespace-nowrap">
-                                    {canSort ? (
-                                      <Button
-                                        variant="ghost"
-                                        onClick={header.column.getToggleSortingHandler()}
-                                        className={cn(
-                                          'px-0 hover:bg-transparent',
-                                          header.column.getIsSorted() &&
-                                            'text-primary'
-                                        )}
-                                      >
-                                        {flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext()
-                                        )}
-                                        {renderSortIcon(
-                                          header.column.getIsSorted()
-                                        )}
-                                      </Button>
-                                    ) : (
-                                      flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext()
-                                      )
-                                    )}
-                                    {canFilter ? (
-                                      <ColumnFilterPopover column={header.column} />
-                                    ) : null}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div
-                                  className={cn(
-                                    'flex items-center gap-0.5',
-                                    getHeaderContentAlignmentClassName(
-                                      alignment,
-                                      index
-                                    )
-                                  )}
-                                >
+                        return (
+                          <TableHead
+                            key={header.id}
+                            className={cn(
+                              'group/header',
+                              getStickyColumnClassName(
+                                index,
+                                header.column.id,
+                                alignment,
+                                true
+                              )
+                            )}
+                          >
+                            {header.isPlaceholder ? null : shouldOverlayControls ? (
+                              <div className="flex items-center justify-center">
+                                <div className="inline-flex items-center gap-1 whitespace-nowrap">
                                   {canSort ? (
                                     <Button
                                       variant="ghost"
                                       onClick={header.column.getToggleSortingHandler()}
-                                      className={
-                                        header.column.getIsSorted()
-                                          ? 'text-primary'
-                                          : ''
-                                      }
+                                      className={cn(
+                                        'px-0 hover:bg-transparent',
+                                        header.column.getIsSorted() &&
+                                          'text-primary'
+                                      )}
                                     >
                                       {flexRender(
                                         header.column.columnDef.header,
                                         header.getContext()
                                       )}
-                                      {header.column.getIsSorted() === 'asc' ? (
-                                        <ArrowUp className="ml-1 h-3.5 w-3.5" />
-                                      ) : header.column.getIsSorted() === 'desc' ? (
-                                        <ArrowDown className="ml-1 h-3.5 w-3.5" />
-                                      ) : (
-                                        <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-0 group-hover/header:opacity-50" />
+                                      {renderSortIcon(
+                                        header.column.getIsSorted()
                                       )}
                                     </Button>
                                   ) : (
@@ -386,20 +352,73 @@ export function ResourceTableView<T>({
                                     <ColumnFilterPopover column={header.column} />
                                   ) : null}
                                 </div>
-                              )}
-                            </TableHead>
-                          )
-                        })()
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody className="**:data-[slot=table-cell]:first:w-0">
-                  {renderRows()}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                              </div>
+                            ) : (
+                              <div
+                                className={cn(
+                                  'flex items-center gap-0.5',
+                                  getHeaderContentAlignmentClassName(
+                                    alignment,
+                                    index
+                                  )
+                                )}
+                              >
+                                {canSort ? (
+                                  <Button
+                                    variant="ghost"
+                                    onClick={header.column.getToggleSortingHandler()}
+                                    className={
+                                      header.column.getIsSorted()
+                                        ? 'text-primary'
+                                        : ''
+                                    }
+                                  >
+                                    {flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )}
+                                    {header.column.getIsSorted() === 'asc' ? (
+                                      <ArrowUp className="ml-1 h-3.5 w-3.5" />
+                                    ) : header.column.getIsSorted() === 'desc' ? (
+                                      <ArrowDown className="ml-1 h-3.5 w-3.5" />
+                                    ) : (
+                                      <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-0 group-hover/header:opacity-50" />
+                                    )}
+                                  </Button>
+                                ) : (
+                                  flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )
+                                )}
+                                {canFilter ? (
+                                  <ColumnFilterPopover column={header.column} />
+                                ) : null}
+                              </div>
+                            )}
+                          </TableHead>
+                        )
+                      })()
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody className="**:data-[slot=table-cell]:first:w-0">
+                {emptyState ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columnCount}
+                      className="p-0 whitespace-normal"
+                    >
+                      {emptyState}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  renderRows()
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 
@@ -448,12 +467,12 @@ export function ResourceTableView<T>({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[10, 20, 50, 100].map((pageSize) => (
+                  {STANDARD_PAGE_SIZES.map((pageSize) => (
                     <SelectItem key={pageSize} value={`${pageSize}`}>
                       {pageSize}
                     </SelectItem>
                   ))}
-                  {resolvedAllPageSize > 0 && (
+                  {showAllPageSizeOption && (
                     <SelectItem value={`${resolvedAllPageSize}`}>
                       {t('resourceTableView.all')}
                     </SelectItem>

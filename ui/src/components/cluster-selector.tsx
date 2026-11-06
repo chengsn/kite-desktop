@@ -1,6 +1,7 @@
 import { IconCheck, IconChevronDown, IconServer } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 
+import { isMacPlatform } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 import { useCluster } from '@/hooks/use-cluster'
 import { Badge } from '@/components/ui/badge'
@@ -20,11 +21,7 @@ import { ShortcutTooltipContent } from '@/components/shortcut-tooltip-content'
 import { useSidebar } from '@/components/ui/sidebar'
 
 function getClusterSwitchShortcutLabel() {
-  if (typeof navigator !== 'undefined' && /mac/i.test(navigator.platform)) {
-    return '⌘⇧K'
-  }
-
-  return 'Ctrl+Shift+K'
+  return isMacPlatform() ? '⌘⇧K' : 'Ctrl+Shift+K'
 }
 
 export function ClusterSelector() {
