@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Container, Pod } from 'kubernetes-types/core/v1'
+import { AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { usePodMetrics } from '@/lib/api'
 import { toSimpleContainer } from '@/lib/k8s'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Select,
   SelectContent,
@@ -150,20 +152,25 @@ export function PodMonitoring({
       {/* Charts */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {data?.fallback && (
-          <div className="xl:col-span-2 rounded bg-yellow-100 text-yellow-800 px-4 py-2 text-sm border border-yellow-300">
-            Current data is from metrics-server, limited historical data.
-          </div>
+          <Alert className="xl:col-span-2">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {t('monitoring.metricsServerFallback')}
+            </AlertDescription>
+          </Alert>
         )}
         <CPUUsageChart
           data={data?.cpu || []}
           isLoading={isLoading}
           syncId="resource-usage"
           error={error}
+          unit={data?.cpuUnit}
         />
         <MemoryUsageChart
           data={data?.memory || []}
           isLoading={isLoading}
           syncId="resource-usage"
+          unit={data?.memoryUnit}
         />
         <NetworkUsageChart
           networkIn={data?.networkIn || []}

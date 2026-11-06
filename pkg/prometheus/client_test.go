@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -168,18 +169,38 @@ func TestGetResourceUsageHistoryUnsupportedDuration(t *testing.T) {
 	}
 }
 
+// utilizationQuery mirrors how the client combines a usage series with its
+// limit/request denominator.
+func utilizationQuery(usage, bound string) string {
+	return usage + ` / (` + bound + ` > 0) * 100`
+}
+
+// containerMatchers is the matcher list for a named container in a pod prefix.
+const containerMatchers = `container!="POD",container!="",container="api",pod=~"web.*",namespace="default"`
+
+// podMatchers is the matcher list used when container labels are unavailable.
+const podMatchers = `pod!="",pod=~"web.*",namespace="default"`
+
 func TestGetPodMetrics(t *testing.T) {
 	sampleTime := time.Date(2026, 3, 27, 11, 0, 0, 0, time.UTC)
 	api := &fakePromAPI{queryRangeResponses: map[string]model.Value{}}
 	client := &Client{client: api}
 
+	// The pod declares limits, so CPU and memory report utilization and the
+	// network/disk series are unchanged.
 	queries := []string{
-		`sum(rate(container_cpu_usage_seconds_total{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}[1m]))`,
-		`sum(container_memory_working_set_bytes{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}) / 1024 / 1024`,
-		`sum(rate(container_network_receive_bytes_total{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}[1m]))`,
-		`sum(rate(container_network_transmit_bytes_total{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}[1m]))`,
-		`sum(rate(container_fs_reads_bytes_total{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}[1m]))`,
-		`sum(rate(container_fs_writes_bytes_total{container!="POD",container!="",container="api",pod=~"web.*",namespace="default"}[1m]))`,
+		utilizationQuery(
+			fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, containerMatchers),
+			fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="cpu",%s})`, containerMatchers),
+		),
+		utilizationQuery(
+			fmt.Sprintf(`sum(container_memory_working_set_bytes{%s})`, containerMatchers),
+			fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="memory",%s})`, containerMatchers),
+		),
+		fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_reads_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_writes_bytes_total{%s}[1m]))`, containerMatchers),
 	}
 	for _, query := range queries {
 		api.queryRangeResponses[query] = matrixValue(sampleTime, 2)
@@ -195,6 +216,9 @@ func TestGetPodMetrics(t *testing.T) {
 	if got.Source != "prometheus-container" {
 		t.Fatalf("GetPodMetrics() source = %q, want prometheus-container", got.Source)
 	}
+	if got.CPUUnit != UnitPercent || got.MemoryUnit != UnitPercent {
+		t.Fatalf("GetPodMetrics() units = %q/%q, want percent/percent", got.CPUUnit, got.MemoryUnit)
+	}
 	if len(api.queryRangeCalls) != len(queries) {
 		t.Fatalf("GetPodMetrics() query calls = %d, want %d", len(api.queryRangeCalls), len(queries))
 	}
@@ -208,13 +232,133 @@ func TestGetPodMetrics(t *testing.T) {
 	}
 }
 
+func TestGetPodMetricsPrefersRequestOverAbsolute(t *testing.T) {
+	sampleTime := time.Date(2026, 3, 27, 11, 0, 0, 0, time.UTC)
+	api := &fakePromAPI{queryRangeResponses: map[string]model.Value{}}
+	client := &Client{client: api}
+
+	// No limit is declared, so the request becomes the denominator. The
+	// absolute series is registered too, to prove it is not preferred.
+	cpuUsage := fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, containerMatchers)
+	memUsage := fmt.Sprintf(`sum(container_memory_working_set_bytes{%s})`, containerMatchers)
+	queries := []string{
+		utilizationQuery(cpuUsage, fmt.Sprintf(`sum(kube_pod_container_resource_requests{resource="cpu",%s})`, containerMatchers)),
+		utilizationQuery(memUsage, fmt.Sprintf(`sum(kube_pod_container_resource_requests{resource="memory",%s})`, containerMatchers)),
+		fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_reads_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_writes_bytes_total{%s}[1m]))`, containerMatchers),
+	}
+	for _, query := range queries {
+		api.queryRangeResponses[query] = matrixValue(sampleTime, 2)
+	}
+	api.queryRangeResponses[cpuUsage] = matrixValue(sampleTime, 99)
+	api.queryRangeResponses[memUsage+` / 1024 / 1024`] = matrixValue(sampleTime, 99)
+
+	got, err := client.GetPodMetrics(context.Background(), "default", "web", "api", "30m")
+	if err != nil {
+		t.Fatalf("GetPodMetrics() error = %v", err)
+	}
+	if got.CPUUnit != UnitPercent || got.MemoryUnit != UnitPercent {
+		t.Fatalf("GetPodMetrics() units = %q/%q, want percent/percent", got.CPUUnit, got.MemoryUnit)
+	}
+	if got.CPU[0].Value != 2 {
+		t.Fatalf("GetPodMetrics() cpu value = %v, want the request-relative 2", got.CPU[0].Value)
+	}
+}
+
+func TestGetPodMetricsPrefersContainerAbsoluteOverPodPercent(t *testing.T) {
+	sampleTime := time.Date(2026, 3, 27, 11, 0, 0, 0, time.UTC)
+	api := &fakePromAPI{queryRangeResponses: map[string]model.Value{}}
+	client := &Client{client: api}
+
+	// The selected container has no limit/request, but a sibling container
+	// does. The container's own absolute usage must win over the pod-wide
+	// percentage, which would otherwise describe the whole pod.
+	cpuAbsolute := fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, containerMatchers)
+	memAbsolute := fmt.Sprintf(`sum(container_memory_working_set_bytes{%s}) / 1024 / 1024`, containerMatchers)
+	api.queryRangeResponses[utilizationQuery(
+		fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, podMatchers),
+		fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="cpu",%s})`, podMatchers),
+	)] = matrixValue(sampleTime, 99)
+	api.queryRangeResponses[utilizationQuery(
+		fmt.Sprintf(`sum(container_memory_working_set_bytes{%s})`, podMatchers),
+		fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="memory",%s})`, podMatchers),
+	)] = matrixValue(sampleTime, 99)
+	api.queryRangeResponses[cpuAbsolute] = matrixValue(sampleTime, 2)
+	api.queryRangeResponses[memAbsolute] = matrixValue(sampleTime, 3)
+	for _, query := range []string{
+		fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_reads_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_writes_bytes_total{%s}[1m]))`, containerMatchers),
+	} {
+		api.queryRangeResponses[query] = matrixValue(sampleTime, 4)
+	}
+
+	got, err := client.GetPodMetrics(context.Background(), "default", "web", "api", "30m")
+	if err != nil {
+		t.Fatalf("GetPodMetrics() error = %v", err)
+	}
+	if got.CPUUnit != UnitCores || got.MemoryUnit != UnitMB {
+		t.Fatalf("GetPodMetrics() units = %q/%q, want cores/mb", got.CPUUnit, got.MemoryUnit)
+	}
+	if got.Source != "prometheus-container" {
+		t.Fatalf("GetPodMetrics() source = %q, want prometheus-container", got.Source)
+	}
+	if got.CPU[0].Value != 2 || got.Memory[0].Value != 3 {
+		t.Fatalf("GetPodMetrics() values = %v/%v, want the container absolute 2/3", got.CPU[0].Value, got.Memory[0].Value)
+	}
+}
+
+func TestGetPodMetricsFallsBackToAbsoluteWithoutLimits(t *testing.T) {
+	sampleTime := time.Date(2026, 3, 27, 11, 0, 0, 0, time.UTC)
+	api := &fakePromAPI{queryRangeResponses: map[string]model.Value{}}
+	client := &Client{client: api}
+
+	// Nothing in kube-state-metrics: every utilization query comes back empty,
+	// so the client reports absolute cores and megabytes.
+	queries := []string{
+		fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(container_memory_working_set_bytes{%s}) / 1024 / 1024`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_reads_bytes_total{%s}[1m]))`, containerMatchers),
+		fmt.Sprintf(`sum(rate(container_fs_writes_bytes_total{%s}[1m]))`, containerMatchers),
+	}
+	for _, query := range queries {
+		api.queryRangeResponses[query] = matrixValue(sampleTime, 2)
+	}
+
+	got, err := client.GetPodMetrics(context.Background(), "default", "web", "api", "30m")
+	if err != nil {
+		t.Fatalf("GetPodMetrics() error = %v", err)
+	}
+	if got.CPUUnit != UnitCores || got.MemoryUnit != UnitMB {
+		t.Fatalf("GetPodMetrics() units = %q/%q, want cores/mb", got.CPUUnit, got.MemoryUnit)
+	}
+	if got.CPU[0].Value != 2 || got.Memory[0].Value != 2 {
+		t.Fatalf("GetPodMetrics() values = %v/%v, want the absolute 2/2", got.CPU[0].Value, got.Memory[0].Value)
+	}
+}
+
 func TestGetPodMetricsFallsBackToPodAggregate(t *testing.T) {
 	sampleTime := time.Date(2026, 3, 27, 11, 0, 0, 0, time.UTC)
 	api := &fakePromAPI{queryRangeResponses: map[string]model.Value{}}
 	client := &Client{client: api}
 
-	api.queryRangeResponses[`sum(rate(container_cpu_usage_seconds_total{pod!="",pod=~"web.*",namespace="default"}[1m]))`] = matrixValue(sampleTime, 2)
-	api.queryRangeResponses[`sum(container_memory_working_set_bytes{pod!="",pod=~"web.*",namespace="default"}) / 1024 / 1024`] = matrixValue(sampleTime, 3)
+	api.queryRangeResponses[utilizationQuery(
+		fmt.Sprintf(`sum(rate(container_cpu_usage_seconds_total{%s}[1m]))`, podMatchers),
+		fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="cpu",%s})`, podMatchers),
+	)] = matrixValue(sampleTime, 2)
+	api.queryRangeResponses[utilizationQuery(
+		fmt.Sprintf(`sum(container_memory_working_set_bytes{%s})`, podMatchers),
+		fmt.Sprintf(`sum(kube_pod_container_resource_limits{resource="memory",%s})`, podMatchers),
+	)] = matrixValue(sampleTime, 3)
+	api.queryRangeResponses[fmt.Sprintf(`sum(rate(container_network_receive_bytes_total{%s}[1m]))`, podMatchers)] = matrixValue(sampleTime, 4)
+	api.queryRangeResponses[fmt.Sprintf(`sum(rate(container_network_transmit_bytes_total{%s}[1m]))`, podMatchers)] = matrixValue(sampleTime, 4)
+	api.queryRangeResponses[fmt.Sprintf(`sum(rate(container_fs_reads_bytes_total{%s}[1m]))`, podMatchers)] = matrixValue(sampleTime, 4)
+	api.queryRangeResponses[fmt.Sprintf(`sum(rate(container_fs_writes_bytes_total{%s}[1m]))`, podMatchers)] = matrixValue(sampleTime, 4)
 
 	got, err := client.GetPodMetrics(context.Background(), "default", "web", "api", "30m")
 	if err != nil {
@@ -222,6 +366,9 @@ func TestGetPodMetricsFallsBackToPodAggregate(t *testing.T) {
 	}
 	if got.Source != "prometheus-pod" {
 		t.Fatalf("GetPodMetrics() source = %q, want prometheus-pod", got.Source)
+	}
+	if got.CPUUnit != UnitPercent || got.MemoryUnit != UnitPercent {
+		t.Fatalf("GetPodMetrics() units = %q/%q, want percent/percent", got.CPUUnit, got.MemoryUnit)
 	}
 	if len(got.Warnings) == 0 {
 		t.Fatalf("GetPodMetrics() warnings = %#v, want non-empty", got.Warnings)

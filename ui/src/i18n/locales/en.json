@@ -51,6 +51,9 @@
     "light": "Light",
     "dark": "Dark",
     "more": "More",
+    "moreCount": "+{{count}} more",
+    "reconnect": "Reconnect",
+    "unknown": "Unknown",
     "na": "N/A"
   },
   "modeToggle": {
@@ -181,7 +184,9 @@
     "recentEvents": "Recent Events",
     "resourceCharts": "Resource Charts",
     "failedToLoad": "Failed to load overview data",
-    "unknownError": "Unknown error occurred"
+    "unknownError": "Unknown error occurred",
+    "allReady": "All ready",
+    "notReadyCount": "{{count}} Not Ready"
   },
   "favorites": {
     "title": "Favorites",
@@ -447,14 +452,17 @@
   },
   "monitoring": {
     "cpuUsage": "CPU Usage",
+    "cpuUsageAbsolute": "CPU Usage (absolute)",
     "memoryUsage": "Memory Usage",
+    "memoryUsageAbsolute": "Memory Usage (absolute)",
     "networkUsage": "Network Usage",
     "diskUsage": "Disk Usage",
     "resourceUtilization": "Resource Utilization",
     "requests": "Requests",
     "limits": "Limits",
     "total": "Total",
-    "available": "Available"
+    "available": "Available",
+    "metricsServerFallback": "Current data is from metrics-server; historical data is limited."
   },
   "login": {
     "title": "Sign In",
@@ -1327,10 +1335,12 @@
     },
     "fields": {
       "created": "Created",
+      "name": "Name",
       "namespace": "Namespace",
       "strategy": "Strategy",
       "updateStrategy": "Update Strategy",
       "serviceName": "Service Name",
+      "serviceAccount": "Service Account",
       "podManagementPolicy": "Pod Management Policy",
       "replicas": "Replicas",
       "currentReplicas": "Current Replicas",
@@ -1339,6 +1349,7 @@
       "completionTime": "Completion Time",
       "uid": "UID",
       "podIP": "Pod IP",
+      "podIPs": "Pod IPs",
       "hostIP": "Host IP",
       "owner": "Owner",
       "parallelism": "Parallelism",
@@ -1434,7 +1445,8 @@
     "openInNewTab": "Open resource in new tab"
   },
   "describe": {
-    "button": "Describe"
+    "button": "Describe",
+    "dialogDescription": "kubectl describe output for the selected resource"
   },
   "yamlEditor": {
     "title": "YAML Configuration",
@@ -1816,6 +1828,12 @@
     "memoryLimitHint": "For example 512Mi, 2Gi, or 1G"
   },
   "namespaceList": {
+    "editQuota": "Edit quota",
+    "manageLabels": "Manage labels",
+    "manageAnnotations": "Manage annotations"
+  },
+  "serviceList": {
+    "viewSelector": "View selector",
     "manageLabels": "Manage labels",
     "manageAnnotations": "Manage annotations"
   },

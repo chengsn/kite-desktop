@@ -303,6 +303,9 @@ export interface ResourceUsageHistory {
   diskWrite: UsageDataPoint[]
 }
 
+// What a metrics series holds, so charts can label their axes correctly.
+export type MetricUnit = 'percent' | 'cores' | 'mb'
+
 // Pod monitoring types
 export interface PodMetrics {
   cpu: UsageDataPoint[]
@@ -311,6 +314,8 @@ export interface PodMetrics {
   networkOut?: UsageDataPoint[]
   diskRead?: UsageDataPoint[]
   diskWrite?: UsageDataPoint[]
+  cpuUnit?: MetricUnit
+  memoryUnit?: MetricUnit
   fallback?: boolean
 }
 

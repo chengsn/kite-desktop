@@ -187,9 +187,11 @@ func (h *PromHandler) fetchPodMetricsFromMetricsServer(c *gin.Context, namespace
 			handlePodMetrics(&podMetrics, timestamp)
 		}
 		return &prometheus.PodMetrics{
-			CPU:      mergeUsageDataPointsSum(cpuSeries),
-			Memory:   mergeUsageDataPointsSum(memSeries),
-			Fallback: true,
+			CPU:        mergeUsageDataPointsSum(cpuSeries),
+			Memory:     mergeUsageDataPointsSum(memSeries),
+			CPUUnit:    prometheus.UnitCores,
+			MemoryUnit: prometheus.UnitMB,
+			Fallback:   true,
 		}, nil
 	}
 
@@ -200,9 +202,11 @@ func (h *PromHandler) fetchPodMetricsFromMetricsServer(c *gin.Context, namespace
 	}
 	handlePodMetrics(podMetrics, podMetrics.Timestamp.Time)
 	return &prometheus.PodMetrics{
-		CPU:      cpuSeries,
-		Memory:   memSeries,
-		Fallback: true,
+		CPU:        cpuSeries,
+		Memory:     memSeries,
+		CPUUnit:    prometheus.UnitCores,
+		MemoryUnit: prometheus.UnitMB,
+		Fallback:   true,
 	}, nil
 }
 

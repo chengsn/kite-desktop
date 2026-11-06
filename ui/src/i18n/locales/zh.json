@@ -68,6 +68,9 @@
     "light": "浅色",
     "dark": "深色",
     "more": "更多",
+    "moreCount": "还有 {{count}} 项",
+    "reconnect": "重新连接",
+    "unknown": "未知",
     "na": "无"
   },
   "modeToggle": {
@@ -207,7 +210,9 @@
     "recentEvents": "最近事件",
     "resourceCharts": "资源图表",
     "failedToLoad": "加载概览数据失败",
-    "unknownError": "发生未知错误"
+    "unknownError": "发生未知错误",
+    "allReady": "全部就绪",
+    "notReadyCount": "{{count}} 个未就绪"
   },
   "favorites": {
     "title": "收藏",
@@ -472,14 +477,17 @@
   },
   "monitoring": {
     "cpuUsage": "CPU使用率",
+    "cpuUsageAbsolute": "CPU 使用量",
     "memoryUsage": "内存使用率",
+    "memoryUsageAbsolute": "内存使用量",
     "networkUsage": "网络使用量",
     "diskUsage": "磁盘使用率",
     "resourceUtilization": "资源利用率",
     "requests": "请求",
     "limits": "限制",
     "total": "总计",
-    "available": "可用"
+    "available": "可用",
+    "metricsServerFallback": "当前数据来自 metrics-server，历史数据有限。"
   },
   "login": {
     "title": "登录",
@@ -1809,10 +1817,12 @@
     },
     "fields": {
       "created": "创建时间",
+      "name": "名称",
       "namespace": "命名空间",
       "strategy": "策略",
       "updateStrategy": "更新策略",
       "serviceName": "服务名称",
+      "serviceAccount": "服务账号",
       "podManagementPolicy": "Pod 管理策略",
       "replicas": "副本数",
       "currentReplicas": "当前副本",
@@ -1821,6 +1831,7 @@
       "completionTime": "完成时间",
       "uid": "UID",
       "podIP": "Pod IP",
+      "podIPs": "Pod IP 列表",
       "hostIP": "主机 IP",
       "owner": "所属对象",
       "parallelism": "并行度",
@@ -1915,7 +1926,8 @@
     "openInNewTab": "在新标签页中打开资源"
   },
   "describe": {
-    "button": "详情"
+    "button": "详情",
+    "dialogDescription": "所选资源的 kubectl describe 输出"
   },
   "yamlEditor": {
     "title": "YAML 配置",
@@ -2107,6 +2119,12 @@
     "memoryLimitHint": "例如：512Mi、2Gi、1G"
   },
   "namespaceList": {
+    "editQuota": "配额编辑",
+    "manageLabels": "管理标签",
+    "manageAnnotations": "管理注解"
+  },
+  "serviceList": {
+    "viewSelector": "查看选择器",
     "manageLabels": "管理标签",
     "manageAnnotations": "管理注解"
   },
