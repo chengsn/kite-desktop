@@ -29,11 +29,11 @@ import {
   parseAnsi,
 } from '@/lib/ansi-parser'
 import { useLogsWebSocket } from '@/lib/api'
+import { saveTextFile } from '@/lib/desktop'
 import {
   loadViewerPreference,
   updateViewerPreference,
 } from '@/lib/desktop-preferences'
-import { saveTextFile } from '@/lib/desktop'
 import { toSimpleContainer } from '@/lib/k8s'
 import { MonacoEditor } from '@/lib/monaco-loader'
 import { defineMonacoLogThemes } from '@/lib/monaco-theme'
@@ -620,7 +620,7 @@ export function LogViewer({
                 />
                 {isLoading && <span>{t('logViewer.loading')}</span>}
                 {isReconnecting && (
-                  <span className="text-blue-600">
+                  <span className="text-info">
                     {t('logViewer.reconnecting')}
                   </span>
                 )}
@@ -703,9 +703,7 @@ export function LogViewer({
                         <SelectItem value="200">200</SelectItem>
                         <SelectItem value="500">500</SelectItem>
                         <SelectItem value="1000">1000</SelectItem>
-                        <SelectItem value="-1">
-                          {t('logViewer.all')}
-                        </SelectItem>
+                        <SelectItem value="-1">{t('logViewer.all')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

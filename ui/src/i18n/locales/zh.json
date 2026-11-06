@@ -559,6 +559,8 @@
   },
   "resourceTable": {
     "errorLoading": "加载 {{resourceName}} 时出错",
+    "refreshFailedTitle": "刷新 {{resourceName}} 失败",
+    "staleDataDescription": "当前显示的是上次加载的数据，重试以获取最新状态。",
     "tryAgain": "重试",
     "filters": "筛选",
     "clearAllFilters": "清除全部筛选",

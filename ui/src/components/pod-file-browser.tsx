@@ -32,8 +32,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
 import { RefreshButton } from '@/components/refresh-button'
+
 import { ErrorMessage } from './error-message'
 import { ContainerSelector } from './selector/container-selector'
 
@@ -247,9 +247,9 @@ export function PodFileBrowser({
                   <TableRow key={file.name}>
                     <TableCell>
                       {file.isDir ? (
-                        <IconFolder className="w-4 h-4 text-blue-500" />
+                        <IconFolder className="w-4 h-4 text-info" />
                       ) : (
-                        <IconFile className="w-4 h-4 text-gray-500" />
+                        <IconFile className="w-4 h-4 text-muted-foreground" />
                       )}
                     </TableCell>
                     <TableCell>

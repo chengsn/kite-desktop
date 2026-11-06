@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import type { SidebarGroup, SidebarItem } from '@/types/sidebar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,9 +29,8 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { CRDSelector } from '@/components/selector/crd-selector'
 import { DeleteConfirmationDialog } from '@/components/delete-confirmation-dialog'
-import type { SidebarGroup, SidebarItem } from '@/types/sidebar'
+import { CRDSelector } from '@/components/selector/crd-selector'
 
 export function SidebarCustomizer({
   onOpenChange,
@@ -130,7 +130,7 @@ export function SidebarCustomizer({
           <PanelLeftOpen className="h-4 w-4" />
           <span>{t('sidebar.customize', 'Customize Sidebar')}</span>
           {hasUpdate && (
-            <span className="ml-auto h-2 w-2 rounded-full bg-red-500" />
+            <span className="ml-auto h-2 w-2 rounded-full bg-destructive" />
           )}
         </DropdownMenuItem>
       </DialogTrigger>
@@ -359,7 +359,9 @@ export function SidebarCustomizer({
                                 onClick={() => toggleItemVisibility(item.id)}
                                 className="h-8 w-8 p-0"
                                 title={
-                                  isHidden ? t('sidebar.show') : t('sidebar.hide')
+                                  isHidden
+                                    ? t('sidebar.show')
+                                    : t('sidebar.hide')
                                 }
                                 aria-label={
                                   isHidden
@@ -465,9 +467,7 @@ export function SidebarCustomizer({
             }
           }}
           resourceName={
-            pendingGroupDelete
-              ? getGroupDisplayName(pendingGroupDelete)
-              : ''
+            pendingGroupDelete ? getGroupDisplayName(pendingGroupDelete) : ''
           }
           resourceType={t('sidebar.customGroup', 'custom group')}
           additionalNote={t(

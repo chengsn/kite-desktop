@@ -18,6 +18,8 @@ const demoDeployment = {
   },
 }
 let resourcesData = [demoDeployment]
+let resourcesError: Error | null = null
+const refetchMock = vi.fn()
 
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api')
@@ -28,9 +30,9 @@ vi.mock('@/lib/api', async () => {
     useResources: () => ({
       isLoading: false,
       data: resourcesData,
-      isError: false,
-      error: null,
-      refetch: vi.fn(),
+      isError: Boolean(resourcesError),
+      error: resourcesError,
+      refetch: refetchMock,
     }),
     useResourcesWatch: () => ({
       data: undefined,
@@ -56,6 +58,8 @@ describe('ResourceTable batch delete confirmation', () => {
     } as unknown as new (callback: ResizeObserverCallback) => ResizeObserver
     localStorage.setItem('current-cluster', 'test-cluster')
     resourcesData = [demoDeployment]
+    resourcesError = null
+    refetchMock.mockReset()
     deleteResourceMock.mockReset()
     deleteResourceMock.mockResolvedValue(undefined)
   })
@@ -97,6 +101,60 @@ describe('ResourceTable batch delete confirmation', () => {
 
     expect(scrollContainer).not.toHaveClass('min-h-[240px]')
     expect(scrollContainer?.getAttribute('style') ?? '').not.toContain('height')
+  })
+
+  it('keeps loaded rows visible and offers a retry when a refresh fails', () => {
+    resourcesError = new Error('connection reset')
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.name', {
+            header: 'Name',
+            cell: ({ row }) => row.original.metadata?.name,
+          }),
+        ]}
+      />
+    )
+
+    expect(screen.getByText('demo')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "Couldn't refresh Deployments"
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }))
+    expect(refetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the full error state when the initial load fails', () => {
+    resourcesData = []
+    resourcesError = new Error('connection reset')
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.name', {
+            header: 'Name',
+            cell: ({ row }) => row.original.metadata?.name,
+          }),
+        ]}
+      />
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Error loading deployments' })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText("Couldn't refresh Deployments")
+    ).not.toBeInTheDocument()
   })
 
   it('marks sortable headers with aria-sort', () => {

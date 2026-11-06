@@ -289,9 +289,7 @@ export function PodTerminalFileTree({
         clusterName,
       })
       toast.success(
-        deleteIsDir
-          ? t('podFiles.directoryDeleted')
-          : t('podFiles.fileDeleted')
+        deleteIsDir ? t('podFiles.directoryDeleted') : t('podFiles.fileDeleted')
       )
       setDeletePath(null)
       refreshVisibleFiles()
@@ -311,7 +309,7 @@ export function PodTerminalFileTree({
     const isExpanded = expandedPaths.has(filePath)
     const directoryState = directoryStates[filePath]
     const icon = file.isDir ? (
-      <IconFolder className="h-4 w-4 shrink-0 text-blue-500" />
+      <IconFolder className="h-4 w-4 shrink-0 text-info" />
     ) : (
       <IconFile className="h-4 w-4 shrink-0 text-muted-foreground" />
     )
@@ -357,7 +355,9 @@ export function PodTerminalFileTree({
               {t('podFiles.edit')}
             </ContextMenuItem>
           ) : null}
-          <ContextMenuItem onSelect={() => handleDownload(filePath, file.isDir)}>
+          <ContextMenuItem
+            onSelect={() => handleDownload(filePath, file.isDir)}
+          >
             <IconDownload className="h-4 w-4" />
             {file.isDir
               ? t('podFiles.downloadDirectoryArchive')

@@ -648,7 +648,7 @@ export function GeneralManagement() {
                   <div
                     className={`rounded-md border px-3 py-2 text-sm md:col-span-2 ${
                       connectionState.status === 'success'
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                        ? 'border-success/30 bg-success/10 text-success'
                         : 'border-destructive/20 bg-destructive/5 text-destructive'
                     }`}
                   >

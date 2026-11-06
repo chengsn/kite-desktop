@@ -556,6 +556,8 @@
   },
   "resourceTable": {
     "errorLoading": "Error loading {{resourceName}}",
+    "refreshFailedTitle": "Couldn't refresh {{resourceName}}",
+    "staleDataDescription": "Showing the last loaded data. Retry to fetch the latest.",
     "tryAgain": "Try Again",
     "filters": "Filters",
     "clearAllFilters": "Clear all filters",

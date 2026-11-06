@@ -35,7 +35,8 @@ import {
   updateResourceTablePreference,
   updateWorkspacePreference,
 } from '@/lib/desktop-preferences'
-import { cn } from '@/lib/utils'
+import { cn, translateError } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -665,7 +666,7 @@ export function ResourceTable<T>({
       return <TableSkeleton rows={8} columns={6} />
     }
 
-    if (isError) {
+    if (isError && memoizedData.length === 0) {
       return (
         <ErrorMessage
           resourceName={resourceName}
@@ -877,6 +878,31 @@ export function ResourceTable<T>({
           </div>
         </div>
       </div>
+
+      {isError && memoizedData.length > 0 ? (
+        <Alert variant="destructive" className="mx-2">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>
+            {t('resourceTable.refreshFailedTitle', {
+              resourceName,
+              defaultValue: `Couldn't refresh ${resourceName}`,
+            })}
+          </AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
+            <span>
+              {error
+                ? translateError(error, t)
+                : t('resourceTable.staleDataDescription', {
+                    defaultValue:
+                      'Showing the last loaded data. Retry to fetch the latest.',
+                  })}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              {t('resourceTable.tryAgain', 'Try Again')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <ResourceTableView
         table={table}

@@ -13,8 +13,8 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { useGeneralSetting } from '@/lib/api'
 import { TERMINAL_THEMES, TerminalTheme } from '@/types/themes'
+import { useGeneralSetting } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -131,7 +131,10 @@ export function FloatingTerminal() {
   }, [closeTerminal])
   const activeToolbarPortalElement = isMinimized ? null : toolbarHostElement
 
-  if (!kubectlEnabled && sessions.every((session) => session.type === 'kubectl'))
+  if (
+    !kubectlEnabled &&
+    sessions.every((session) => session.type === 'kubectl')
+  )
     return null
   if (!isOpen) return null
 
@@ -167,7 +170,7 @@ export function FloatingTerminal() {
           className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm font-semibold text-foreground transition-opacity hover:opacity-70"
           onClick={handleMinimize}
         >
-          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-green-500 shadow-sm" />
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-success shadow-sm" />
           <span className="shrink-0 truncate">
             {t('floatingTerminal.workspace', 'Terminal Workspace')}
           </span>
@@ -285,14 +288,12 @@ export function FloatingTerminal() {
                 ) : (
                   <Monitor className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <span className="min-w-0 flex-1 truncate">
-                  {session.title}
-                </span>
+                <span className="min-w-0 flex-1 truncate">{session.title}</span>
                 <span className="hidden shrink-0 text-[11px] text-muted-foreground xl:inline">
                   {session.clusterName}
                 </span>
                 <span
-                  className="h-2 w-2 shrink-0 rounded-full bg-green-500"
+                  className="h-2 w-2 shrink-0 rounded-full bg-success"
                   aria-hidden="true"
                 />
                 <span

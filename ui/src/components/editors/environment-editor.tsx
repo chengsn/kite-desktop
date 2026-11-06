@@ -389,7 +389,9 @@ export function EnvironmentEditor({
                               {t('environmentEditor.key')}
                             </Label>
                             <Input
-                              placeholder={t('environmentEditor.keyPlaceholder')}
+                              placeholder={t(
+                                'environmentEditor.keyPlaceholder'
+                              )}
                               value={env.valueFrom.secretKeyRef.key}
                               onChange={(e) =>
                                 updateValueFrom(
@@ -435,7 +437,9 @@ export function EnvironmentEditor({
                               {t('environmentEditor.key')}
                             </Label>
                             <Input
-                              placeholder={t('environmentEditor.keyPlaceholder')}
+                              placeholder={t(
+                                'environmentEditor.keyPlaceholder'
+                              )}
                               value={env.valueFrom.configMapKeyRef.key}
                               onChange={(e) =>
                                 updateValueFrom(
@@ -522,7 +526,9 @@ export function EnvironmentEditor({
                         {t('environmentEditor.value')}
                       </Label>
                       <Input
-                        placeholder={t('environmentEditor.variableValuePlaceholder')}
+                        placeholder={t(
+                          'environmentEditor.variableValuePlaceholder'
+                        )}
                         value={env.value || ''}
                         onChange={(e) =>
                           updateEnvVar(index, 'value', e.target.value)
@@ -546,7 +552,7 @@ export function EnvironmentEditor({
               onClick={() => removeEnvVar(index)}
               size="sm"
               variant="ghost"
-              className="text-red-500 hover:text-red-700 mt-5"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive mt-5"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -664,7 +670,7 @@ export function EnvironmentEditor({
               onClick={() => removeEnvFromSource(index)}
               size="sm"
               variant="ghost"
-              className="text-red-500 hover:text-red-700 mt-5"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive mt-5"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

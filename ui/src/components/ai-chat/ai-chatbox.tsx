@@ -6,9 +6,9 @@ import {
   Bot,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Clipboard,
   ClipboardCheck,
+  Clock,
   ExternalLink,
   Loader2,
   MessageSquarePlus,
@@ -25,8 +25,8 @@ import { useLocation, useSearchParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
 
 import { copyTextToClipboard, openURL, startWindowDrag } from '@/lib/desktop'
-import { cn } from '@/lib/utils'
 import { withSubPath } from '@/lib/subpath'
+import { cn } from '@/lib/utils'
 import { ChatMessage, ChatSession, useAIChat } from '@/hooks/use-ai-chat'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Button } from '@/components/ui/button'
@@ -327,12 +327,12 @@ function ToolCallMessage({
 
   const statusIcon = () => {
     if (isPending)
-      return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
-    if (isConfirmed) return <CheckCircle2 className="h-3 w-3 text-green-500" />
+      return <Loader2 className="h-3 w-3 animate-spin text-warning" />
+    if (isConfirmed) return <CheckCircle2 className="h-3 w-3 text-success" />
     if (isDenied) return <XCircle className="h-3 w-3 text-muted-foreground" />
-    if (isError) return <XCircle className="h-3 w-3 text-red-500" />
+    if (isError) return <XCircle className="h-3 w-3 text-destructive" />
     if (message.toolResult)
-      return <CheckCircle2 className="h-3 w-3 text-green-500" />
+      return <CheckCircle2 className="h-3 w-3 text-success" />
     return <Loader2 className="h-3 w-3 animate-spin" />
   }
 
@@ -567,7 +567,7 @@ function ToolCallMessage({
         </div>
       )}
       {isPending && message.pendingAction && (
-        <div className="mt-1.5 rounded border border-yellow-500/30 bg-yellow-500/5 p-2">
+        <div className="mt-1.5 rounded border border-warning/30 bg-warning/5 p-2">
           <p className="mb-1.5 text-xs font-medium text-foreground">
             {describeAction(
               message.pendingAction.tool,
