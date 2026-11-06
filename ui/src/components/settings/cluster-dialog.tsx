@@ -468,8 +468,8 @@ function ClusterDialogContent({
         </div>
 
         {formData.inCluster && (
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+          <div className="p-4 bg-info/20 rounded-lg border border-info/30 dark:border-info/30">
+            <p className="text-sm text-foreground">
               {t(
                 'clusterManagement.form.inCluster.note',
                 'This cluster uses the in-cluster service account configuration. No additional kubeconfig is required.'
@@ -482,7 +482,7 @@ function ClusterDialogContent({
           <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm">
               {testStatus === 'success' && (
-                <p className="text-emerald-600">{testMessage}</p>
+                <p className="text-success">{testMessage}</p>
               )}
               {testStatus === 'error' && (
                 <p className="text-destructive">{testMessage}</p>

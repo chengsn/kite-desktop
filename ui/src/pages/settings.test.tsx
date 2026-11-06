@@ -7,11 +7,16 @@ vi.mock('@/hooks/use-page-title', () => ({
   usePageTitle: vi.fn(),
 }))
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (_key: string, fallback?: string) => fallback ?? _key,
-  }),
-}))
+vi.mock('react-i18next', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-i18next')>()
+
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (_key: string, fallback?: string) => fallback ?? _key,
+    }),
+  }
+})
 
 vi.mock('@/components/settings/desktop-management', () => ({
   DesktopManagement: () => <div>Desktop</div>,

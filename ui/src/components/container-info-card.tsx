@@ -16,11 +16,14 @@ const sectionLabelClassName =
   'text-balance text-xs font-medium text-muted-foreground uppercase'
 const bodyTextClassName = 'text-sm text-pretty'
 
-function renderState(state: ContainerState, t: (key: string, options?: Record<string, unknown>) => string) {
+function renderState(
+  state: ContainerState,
+  t: (key: string, options?: Record<string, unknown>) => string
+) {
   if (state.running) {
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="default" className="bg-green-600">
+        <Badge variant="default" className="bg-success text-success-foreground">
           {t('containerInfo.running')}
         </Badge>
         {state.running.startedAt && (
@@ -307,9 +310,10 @@ export function ContainerInfoCard({
                           {src.configMapRef && (
                             <Badge
                               variant="outline"
-                              className="text-xs bg-blue-50 dark:bg-blue-950"
+                              className="text-xs bg-info/10"
                             >
-                              {t('containerInfo.configMap')}: {src.configMapRef.name}
+                              {t('containerInfo.configMap')}:{' '}
+                              {src.configMapRef.name}
                               {src.prefix &&
                                 ` (${t('containerInfo.prefix')}: ${src.prefix})`}
                             </Badge>
@@ -317,7 +321,7 @@ export function ContainerInfoCard({
                           {src.secretRef && (
                             <Badge
                               variant="outline"
-                              className="text-xs bg-green-50 dark:bg-green-950"
+                              className="text-xs bg-success/10"
                             >
                               {t('containerInfo.secret')}: {src.secretRef.name}
                               {src.prefix &&
@@ -334,9 +338,7 @@ export function ContainerInfoCard({
                         key={i}
                         className="text-xs font-mono flex gap-1 flex-wrap"
                       >
-                        <span className="text-blue-600 dark:text-blue-400">
-                          {envVar.name}
-                        </span>
+                        <span className="text-info">{envVar.name}</span>
                         {envVar.value !== undefined && (
                           <>
                             <span className="text-muted-foreground">=</span>
@@ -346,7 +348,7 @@ export function ContainerInfoCard({
                           </>
                         )}
                         {envVar.valueFrom && (
-                          <span className="text-orange-600 dark:text-orange-400">
+                          <span className="text-warning">
                             = ({t('containerInfo.from')}{' '}
                             {envVar.valueFrom.secretKeyRef
                               ? `secret:${envVar.valueFrom.secretKeyRef.name}/${envVar.valueFrom.secretKeyRef.key}`
@@ -414,7 +416,7 @@ export function ContainerInfoCard({
                   <div className="mt-2 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                     {container.resources.requests && (
                       <div>
-                        <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                        <div className="text-xs font-medium text-success mb-1">
                           {t('monitoring.requests')}
                         </div>
                         {container.resources.requests.cpu && (
@@ -439,7 +441,7 @@ export function ContainerInfoCard({
                     )}
                     {container.resources.limits && (
                       <div>
-                        <div className="text-xs font-medium text-red-600 dark:text-red-400 mb-1">
+                        <div className="text-xs font-medium text-destructive mb-1">
                           {t('monitoring.limits')}
                         </div>
                         {container.resources.limits.cpu && (
@@ -479,17 +481,17 @@ export function ContainerInfoCard({
                     {
                       label: t('containerInfo.liveness'),
                       probe: container.livenessProbe,
-                      color: 'bg-green-50 dark:bg-green-950',
+                      color: 'bg-success/10',
                     },
                     {
                       label: t('containerInfo.readiness'),
                       probe: container.readinessProbe,
-                      color: 'bg-blue-50 dark:bg-blue-950',
+                      color: 'bg-info/10',
                     },
                     {
                       label: t('containerInfo.startup'),
                       probe: container.startupProbe,
-                      color: 'bg-yellow-50 dark:bg-yellow-950',
+                      color: 'bg-warning/10',
                     },
                   ]
                     .filter((p) => p.probe)
@@ -514,7 +516,9 @@ export function ContainerInfoCard({
                                 : t('containerInfo.custom')}
                         </span>
                         <span className="text-muted-foreground tabular-nums">
-                          ({t('containerInfo.initial')}: {probe!.initialDelaySeconds ?? 0}s, {t('containerInfo.period')}:{' '}
+                          ({t('containerInfo.initial')}:{' '}
+                          {probe!.initialDelaySeconds ?? 0}s,{' '}
+                          {t('containerInfo.period')}:{' '}
                           {probe!.periodSeconds ?? 10}s)
                         </span>
                       </div>

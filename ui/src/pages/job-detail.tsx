@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IconLoader, IconTrash } from '@tabler/icons-react'
+import { IconTrash } from '@tabler/icons-react'
 import { formatDistance } from 'date-fns'
 import * as yaml from 'js-yaml'
 import { Job } from 'kubernetes-types/batch/v1'
@@ -28,12 +28,14 @@ import { EventTable } from '@/components/event-table'
 import { LabelsAnno } from '@/components/lables-anno'
 import { LogViewer } from '@/components/log-viewer'
 import { OpenPodTerminalButton } from '@/components/open-pod-terminal-button'
+import { PageHeader } from '@/components/page-header'
 import { PodMonitoring } from '@/components/pod-monitoring'
 import { PodTable } from '@/components/pod-table'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { VolumeTable } from '@/components/volume-table'
 import { YamlEditor } from '@/components/yaml-editor'
 
@@ -187,22 +189,7 @@ export function JobDetail(props: { namespace: string; name: string }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', {
-                  resource: t('resourceKind.job'),
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isError || !job) {
@@ -224,44 +211,45 @@ export function JobDetail(props: { namespace: string; name: string }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{name}</h1>
-          <p className="text-muted-foreground">
-            {t('detail.fields.namespace')}:{' '}
-            <span className="font-medium">{namespace}</span>
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-          >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType={'jobs'}
-            namespace={namespace}
-            name={name}
-          />
-          <OpenPodTerminalButton
-            namespace={namespace}
-            pods={pods}
-            containers={job.spec?.template.spec?.containers}
-            initContainers={job.spec?.template.spec?.initContainers}
-            source={`job/${name}`}
-          />
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={name}
+        description={
+          <>
+            <p className="text-muted-foreground">
+              {t('detail.fields.namespace')}:{' '}
+              <span className="font-medium">{namespace}</span>
+            </p>
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType={'jobs'}
+          namespace={namespace}
+          name={name}
+        />
+        <OpenPodTerminalButton
+          namespace={namespace}
+          pods={pods}
+          containers={job.spec?.template.spec?.containers}
+          initContainers={job.spec?.template.spec?.initContainers}
+          source={`job/${name}`}
+        />
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

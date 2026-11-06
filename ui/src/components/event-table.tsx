@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { IconLoader } from '@tabler/icons-react'
 import { Event } from 'kubernetes-types/core/v1'
 import { useTranslation } from 'react-i18next'
 
@@ -7,6 +6,7 @@ import { ResourceType } from '@/types/api'
 import { useResourcesEvents } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
+import { TableSkeleton } from './resource-state'
 import { Column, SimpleTable } from './simple-table'
 import { Badge } from './ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -89,12 +89,7 @@ export function EventTable(props: {
   )
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <IconLoader className="animate-spin mr-2" />
-        {t('common.loading')}
-      </div>
-    )
+    return <TableSkeleton rows={5} columns={4} />
   }
   return (
     <Card>

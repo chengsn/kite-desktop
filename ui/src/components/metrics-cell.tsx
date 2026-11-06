@@ -93,9 +93,9 @@ export function MetricCell({
         : 0
 
     const getProgressColor = () => {
-      if (percentage > 90) return 'bg-red-500'
-      if (percentage > 60) return 'bg-yellow-500'
-      return 'bg-blue-500'
+      if (percentage > 90) return 'bg-destructive'
+      if (percentage > 60) return 'bg-warning'
+      return 'bg-info'
     }
 
     const tooltipContent = (
@@ -193,7 +193,7 @@ export function MetricCell({
                     transform: 'translateX(-50%)',
                   }}
                 >
-                  <div className="w-0.5 h-3 bg-muted-foreground dark:bg-gray-400 rounded-sm shadow-sm"></div>
+                  <div className="w-0.5 h-3 bg-muted-foreground rounded-sm shadow-sm"></div>
                 </div>
               )}
             </div>

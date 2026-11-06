@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IconExternalLink, IconLoader } from '@tabler/icons-react'
+import { IconExternalLink } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
+import { TableSkeleton } from './resource-state'
 import { Column, SimpleTable } from './simple-table'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
@@ -78,12 +79,7 @@ export function RelatedResourcesTable(props: {
   )
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <IconLoader className="animate-spin mr-2" />
-        {t('relatedResources.loading')}
-      </div>
-    )
+    return <TableSkeleton rows={5} columns={4} />
   }
   return (
     <Card>
@@ -131,12 +127,12 @@ function RelatedResourcesSection({
 }) {
   const toneClassName =
     tone === 'reference'
-      ? 'border-sky-200/70 bg-sky-50/50 dark:border-sky-900/60 dark:bg-sky-950/20'
-      : 'border-emerald-200/70 bg-emerald-50/50 dark:border-emerald-900/60 dark:bg-emerald-950/20'
+      ? 'border-info/30 bg-info/5'
+      : 'border-success/30 bg-success/5'
   const badgeClassName =
     tone === 'reference'
-      ? 'border-sky-200 bg-sky-100 text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300'
-      : 'border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+      ? 'border-info/30 bg-info/5 text-info'
+      : 'border-success/30 bg-success/5 text-success'
 
   return (
     <section className={`rounded-lg border p-4 ${toneClassName}`}>

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Cluster } from '@/types/api'
+import { trackDesktopEvent } from '@/lib/analytics'
 import {
   ClusterConnectionTestResponse,
   ClusterCreateRequest,
@@ -23,9 +24,8 @@ import {
   updateCluster,
   useClusterList,
 } from '@/lib/api'
-import { trackDesktopEvent } from '@/lib/analytics'
-import { invalidateClusterQueries } from '@/lib/cluster-query'
 import { translateClusterConnectionError } from '@/lib/cluster-connection-errors'
+import { invalidateClusterQueries } from '@/lib/cluster-query'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -84,7 +84,7 @@ export function ClusterManagement() {
         return (
           <Badge
             variant="outline"
-            className="bg-blue-50 text-blue-700 border-blue-200"
+            className="bg-info/5 text-info border-info/30"
           >
             {t('clusterManagement.type.inCluster', 'In-Cluster')}
           </Badge>
@@ -93,7 +93,7 @@ export function ClusterManagement() {
       return (
         <Badge
           variant="outline"
-          className="bg-gray-50 text-gray-700 border-gray-200"
+          className="bg-muted/50 text-muted-foreground border-border"
         >
           {t('clusterManagement.type.external', 'External')}
         </Badge>
@@ -141,7 +141,7 @@ export function ClusterManagement() {
         return (
           <Badge
             variant="outline"
-            className="border-emerald-200 bg-emerald-50 text-emerald-700"
+            className="border-success/30 bg-success/10 text-success"
           >
             {t('clusterManagement.connection.reachable', 'Reachable')}
           </Badge>

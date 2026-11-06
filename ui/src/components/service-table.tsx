@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { IconLoader } from '@tabler/icons-react'
 import { Service } from 'kubernetes-types/core/v1'
 import { useTranslation } from 'react-i18next'
 
+import { TableSkeleton } from './resource-state'
 import { Column, SimpleTable } from './simple-table'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
@@ -60,12 +60,7 @@ export function ServiceTable(props: {
   )
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <IconLoader className="animate-spin mr-2" />
-        {t('serviceTable.loading')}
-      </div>
-    )
+    return <TableSkeleton rows={5} columns={4} />
   }
   return (
     <Card>

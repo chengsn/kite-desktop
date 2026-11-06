@@ -1,19 +1,27 @@
 import { useTranslation } from 'react-i18next'
 
 import { useOverview, useResourceUsageHistory } from '@/lib/api'
+import { useCluster } from '@/hooks/use-cluster'
 import NetworkUsageChart from '@/components/chart/network-usage-chart'
 import ResourceUtilizationChart from '@/components/chart/resource-utilization'
 import { ClusterStatsCards } from '@/components/cluster-stats-cards'
 import { NoClusterState } from '@/components/no-cluster-state'
+import { PageHeader } from '@/components/page-header'
 import { RecentEvents } from '@/components/recent-events'
+import { ErrorState } from '@/components/resource-state'
 import { ResourceCharts } from '@/components/resources-charts'
-import { useCluster } from '@/hooks/use-cluster'
 
 export function Overview() {
   const { t } = useTranslation()
   const timeRange = '30m'
   const { currentCluster } = useCluster()
-  const { data: overview, isLoading, error, isError } = useOverview()
+  const {
+    data: overview,
+    isLoading,
+    error,
+    isError,
+    refetch: refetchOverview,
+  } = useOverview()
 
   const {
     data: resourceUsage,
@@ -29,20 +37,20 @@ export function Overview() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-2">
-        <h2 className="text-lg font-semibold">{t('overview.failedToLoad')}</h2>
-        <p className="text-sm text-muted-foreground">
-          {error instanceof Error ? error.message : t('overview.unknownError')}
-        </p>
-      </div>
+      <ErrorState
+        className="h-64"
+        title={t('overview.failedToLoad')}
+        description={
+          error instanceof Error ? error.message : t('overview.unknownError')
+        }
+        onRetry={() => void refetchOverview()}
+      />
     )
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('overview.title')}</h1>
-      </div>
+      <PageHeader title={t('overview.title')} />
 
       <ClusterStatsCards stats={overview} isLoading={isLoading} />
 

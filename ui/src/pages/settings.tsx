@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { usePageTitle } from '@/hooks/use-page-title'
 import { ResponsiveTabs } from '@/components/ui/responsive-tabs'
+import { PageHeader } from '@/components/page-header'
 import { AboutManagement } from '@/components/settings/about-management'
 import { ClusterManagement } from '@/components/settings/cluster-management'
 import { DesktopManagement } from '@/components/settings/desktop-management'
@@ -48,17 +49,14 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-2">
-      <div className="mb-4">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl">{t('settings.title', 'Settings')}</h1>
-        </div>
-        <p className="text-muted-foreground">
-          {t(
-            'settings.descriptionLocal',
-            'Manage local preferences, clusters and templates'
-          )}
-        </p>
-      </div>
+      <PageHeader
+        className="mb-4"
+        title={t('settings.title', 'Settings')}
+        description={t(
+          'settings.descriptionLocal',
+          'Manage local preferences, clusters and templates'
+        )}
+      />
 
       <ResponsiveTabs tabs={tabs} />
     </div>

@@ -1,7 +1,8 @@
 {
-  "username": "用户名",
-  "user": "用户",
-  "group": "用户组",
+  "app": {
+    "name": "Kite",
+    "tagline": "Kubernetes 桌面客户端"
+  },
   "common": {
     "loading": "加载中...",
     "error": "错误",
@@ -26,18 +27,7 @@
     "close": "关闭",
     "clear": "清空",
     "add": "添加",
-    "enable": "启用",
-    "disable": "禁用",
-    "enabled": "已启用",
-    "disabled": "已禁用",
-    "update": "更新",
-    "resetPassword": "重置密码",
-    "assign": "分配权限",
-    "assignRoles": "分配角色",
-    "password": "密码",
     "version": "版本",
-    "createdAt": "创建时间",
-    "copied": "已复制到剪贴板",
     "viewDetails": "查看详情",
     "viewYaml": "查看 YAML",
     "manageLabels": "管理标签",
@@ -53,7 +43,6 @@
     "all": "全部",
     "retry": "重试",
     "later": "稍后",
-    "required": "此字段为必填项",
     "description": "描述",
     "yaml": "YAML",
     "history": "历史",
@@ -71,7 +60,13 @@
     "moreCount": "还有 {{count}} 项",
     "reconnect": "重新连接",
     "unknown": "未知",
-    "na": "无"
+    "na": "无",
+    "copyNamespace": "复制命名空间",
+    "key": "键",
+    "noData": "暂无数据",
+    "remove": "移除",
+    "saving": "保存中...",
+    "value": "值"
   },
   "modeToggle": {
     "toggleTheme": "切换主题"
@@ -112,7 +107,6 @@
   },
   "nav": {
     "overview": "概览",
-    "workloads": "工作负载",
     "pods": "容器组",
     "deployments": "部署",
     "statefulsets": "有状态副本集",
@@ -139,7 +133,6 @@
     "favorites": "收藏",
     "crds": "自定义资源定义",
     "kubectl": "Kubectl 终端",
-    "settings": "设置",
     "serviceaccounts": "服务账户",
     "roles": "角色",
     "rolebindings": "角色绑定",
@@ -180,6 +173,7 @@
     "expand": "展开",
     "collapse": "折叠",
     "newVersionAvailable": "发现新版本",
+    "newBadge": "新",
     "mobileTitle": "侧边栏",
     "mobileDescription": "显示移动端侧边栏。",
     "toggle": "切换侧边栏",
@@ -199,7 +193,11 @@
     "showItem": "显示项目",
     "hideItem": "隐藏项目",
     "moveUp": "上移",
-    "moveDown": "下移"
+    "moveDown": "下移",
+    "createGroup": "新建 CRD 分组",
+    "customGroupItem": "自定义分组项",
+    "deleteGroupItemNote": "仅从自定义分组“{{groupName}}”中移除该项。",
+    "deleteGroupNote": "仅移除自定义分组及其侧边栏条目，不会删除任何集群资源。"
   },
   "advancedNetworking": {
     "description": "在一个页面中统一查看网络策略、网关和 HTTP 路由"
@@ -351,6 +349,7 @@
     "removeCertificate": "移除证书",
     "noCertificates": "暂无证书配置",
     "ingressClassOptionCount": "当前集群有 {{count}} 个 IngressClass 可选",
+    "ingressClassOptionCount_other": "当前集群有 {{count}} 个 IngressClass 可选",
     "noIngressClassOptions": "当前集群未发现可选 IngressClass",
     "selectOption": "选择选项",
     "searchOptions": "搜索选项...",
@@ -473,7 +472,8 @@
     "terminating": "终止中",
     "crashLoopBackOff": "崩溃循环退避",
     "containerCreating": "容器创建中",
-    "imagePullBackOff": "镜像拉取退避"
+    "imagePullBackOff": "镜像拉取退避",
+    "notReady": "未就绪"
   },
   "monitoring": {
     "cpuUsage": "CPU使用率",
@@ -535,8 +535,6 @@
       "generalError": "身份验证过程中发生意外错误。",
       "contactSupport": "请重试或联系支持（如果问题仍然存在）。",
       "invalidCredentials": "用户名或密码无效",
-      "insufficient permissions": "权限不足",
-      "invalid credentials": "用户名或密码无效",
       "unknownError": "发生未知错误",
       "notInAllowedGroups": "认证成功，但您的账号不属于 {{provider}} 允许的群组。",
       "notInAllowedGroupsDetails": "请联系管理员将您添加到允许的群组中。"
@@ -562,6 +560,8 @@
   "resourceTable": {
     "errorLoading": "加载 {{resourceName}} 时出错",
     "tryAgain": "重试",
+    "filters": "筛选",
+    "clearAllFilters": "清除全部筛选",
     "delete": "删除",
     "deleteSelected": "删除 ({{count}})",
     "selectAll": "全选 ({{count}})",
@@ -594,18 +594,12 @@
     }
   },
   "rbac": {
-    "title": "角色管理",
     "noPermissionCluster": "用户 {{user}} 没有权限在集群 {{cluster}} 上执行 {{verb}} {{resource}}",
     "noPermissionNamespace": "用户 {{user}} 没有权限在集群 {{cluster}} 的命名空间 {{namespace}} 中执行 {{verb}} {{resource}}",
     "accessDenied": "访问被拒绝",
     "insufficientPermissions": "您没有足够的权限执行此操作",
     "allNamespaces": "所有命名空间",
-    "get": "获取",
     "resourceType": "角色",
-    "actions": {
-      "add": "添加角色",
-      "assign": "分配"
-    },
     "table": {
       "clusters": "集群",
       "namespaces": "命名空间",
@@ -616,68 +610,6 @@
     "subject": {
       "user": "用户",
       "group": "用户组"
-    },
-    "assign": {
-      "title": "分配角色",
-      "current": "当前分配",
-      "users": "用户",
-      "groups": "OIDC 用户组",
-      "subjectType": "主体类型",
-      "user": "用户",
-      "group": "OIDC 用户组",
-      "subject": "主体",
-      "subjectPlaceholder": "用户名或用户组名称",
-      "confirmRemoveSelf": "你正在移除自己的角色分配，这可能影响你的权限，确认继续吗？"
-    },
-    "dialog": {
-      "add": {
-        "title": "添加角色"
-      },
-      "edit": {
-        "title": "编辑角色"
-      }
-    },
-    "form": {
-      "name": {
-        "label": "角色名称"
-      },
-      "description": {
-        "label": "描述"
-      },
-      "permissions": {
-        "label": "权限"
-      },
-      "clusters": {
-        "label": "集群"
-      },
-      "namespaces": {
-        "label": "命名空间"
-      },
-      "resources": {
-        "label": "资源"
-      },
-      "verbs": {
-        "label": "动词"
-      }
-    },
-    "empty": {
-      "title": "暂无角色配置",
-      "description": "创建角色以授予权限"
-    },
-    "errors": {
-      "loadFailed": "加载角色失败"
-    },
-    "messages": {
-      "created": "角色创建成功",
-      "updated": "角色更新成功",
-      "deleted": "角色删除成功",
-      "createError": "创建角色失败",
-      "updateError": "更新角色失败",
-      "deleteError": "删除角色失败",
-      "assigned": "分配成功",
-      "assignError": "分配失败",
-      "unassigned": "取消分配成功",
-      "unassignError": "取消分配失败"
     },
     "verb": {
       "get": "获取",
@@ -702,8 +634,10 @@
       "oauth": "认证",
       "rbac": "权限控制",
       "users": "用户",
-      "apikeys": "API 密钥"
-    }
+      "apikeys": "API 密钥",
+      "p8s": "Prometheus"
+    },
+    "nav": "设置"
   },
   "desktopManagement": {
     "title": "桌面端",
@@ -867,41 +801,6 @@
       "connectionTestSuccess": "连接测试成功。"
     }
   },
-  "authenticationManagement": {
-    "title": "认证",
-    "ldap": {
-      "title": "LDAP",
-      "description": "启用 LDAP 用户名密码登录，并将 LDAP 组同步到 RBAC。",
-      "form": {
-        "serverUrl": "服务地址",
-        "useStartTLS": "启用 StartTLS",
-        "useStartTLSHint": "当使用 ldap:// 地址时启用 StartTLS。",
-        "bindDn": "绑定 DN",
-        "bindPassword": "绑定密码",
-        "bindPasswordPlaceholder": "留空将保持当前绑定密码",
-        "userBaseDn": "用户 Base DN",
-        "userFilter": "用户过滤器",
-        "usernameAttribute": "用户名属性",
-        "displayNameAttribute": "显示名属性",
-        "groupBaseDn": "用户组 Base DN",
-        "groupFilter": "用户组过滤器",
-        "groupNameAttribute": "用户组名称属性"
-      }
-    },
-    "errors": {
-      "serverUrlRequired": "LDAP 服务地址不能为空",
-      "bindDnRequired": "LDAP 绑定 DN 不能为空",
-      "bindPasswordRequired": "LDAP 绑定密码不能为空",
-      "userBaseDnRequired": "LDAP 用户 Base DN 不能为空",
-      "groupBaseDnRequired": "LDAP 用户组 Base DN 不能为空",
-      "loadFailed": "加载认证设置失败",
-      "userFilterPlaceholder": "LDAP 用户过滤器必须且只能包含一个 %s",
-      "groupFilterPlaceholder": "LDAP 用户组过滤器必须且只能包含一个 %s"
-    },
-    "messages": {
-      "updated": "认证设置已更新"
-    }
-  },
   "settingsHint": {
     "title": "完成设置",
     "description": "配置基本设置以获得最佳体验",
@@ -915,45 +814,6 @@
       "description": "配置角色和权限"
     },
     "viewAll": "查看所有设置"
-  },
-  "auditLog": {
-    "title": "审计日志",
-    "description": "追踪资源变更记录并查看 YAML 差异",
-    "loading": "正在加载审计日志...",
-    "loadFailed": "加载审计日志失败",
-    "empty": "未找到审计日志",
-    "diffTitle": "YAML 差异",
-    "errorTitle": "错误详情",
-    "noErrorMessage": "没有错误信息",
-    "table": {
-      "time": "时间",
-      "operator": "操作人",
-      "operation": "操作",
-      "resource": "资源",
-      "cluster": "集群",
-      "status": "状态",
-      "actions": "操作"
-    },
-    "status": {
-      "success": "成功",
-      "failed": "失败"
-    },
-    "actions": {
-      "viewError": "查看错误",
-      "viewDiff": "查看差异"
-    },
-    "filters": {
-      "search": "搜索资源名称...",
-      "operation": "全部操作",
-      "allOperations": "全部操作",
-      "cluster": "全部集群",
-      "allClusters": "全部集群",
-      "user": "全部用户",
-      "allUsers": "全部用户"
-    },
-    "operator": {
-      "apiKey": "API 密钥"
-    }
   },
   "clusterManagement": {
     "title": "集群管理",
@@ -1089,127 +949,6 @@
       }
     }
   },
-  "oauthManagement": {
-    "title": "OAuth 提供商管理",
-    "resourceType": "OAuth 提供商",
-    "actions": {
-      "add": "添加提供商",
-      "edit": "编辑",
-      "delete": "删除"
-    },
-    "table": {
-      "name": "名称",
-      "clientId": "客户端 ID",
-      "issuer": "签发者",
-      "status": "状态",
-      "actions": "操作"
-    },
-    "status": {
-      "enabled": "已启用",
-      "disabled": "已禁用"
-    },
-    "empty": {
-      "title": "暂无 OAuth 提供商配置",
-      "description": "添加您的第一个 OAuth 提供商"
-    },
-    "messages": {
-      "created": "OAuth 提供商创建成功",
-      "updated": "OAuth 提供商更新成功",
-      "deleted": "OAuth 提供商删除成功",
-      "createError": "创建 OAuth 提供商失败",
-      "updateError": "更新 OAuth 提供商失败",
-      "deleteError": "删除 OAuth 提供商失败"
-    },
-    "errors": {
-      "loadFailed": "加载 OAuth 提供商失败"
-    },
-    "deleteConfirmation": "此操作将移除 OAuth 提供商配置，用户将无法再使用该提供商登录。",
-    "dialog": {
-      "createTitle": "添加 OAuth 提供商",
-      "editTitle": "编辑 OAuth 提供商",
-      "name": "名称",
-      "namePlaceholder": "例如：github, google",
-      "clientId": "客户端 ID",
-      "clientIdPlaceholder": "OAuth 客户端 ID",
-      "clientSecret": "客户端密钥",
-      "clientSecretRequired": "OAuth 客户端密钥",
-      "clientSecretPlaceholder": "留空以保持当前密钥",
-      "authUrl": "授权 URL",
-      "tokenUrl": "令牌 URL",
-      "userInfoUrl": "用户信息 URL",
-      "scopes": "权限范围",
-      "issuer": "签发者",
-      "enabled": "启用",
-      "scopesPlaceholder": "openid,profile,email",
-      "issuerPlaceholder": "https://provider.com（自动发现）",
-      "authUrlPlaceholder": "https://provider.com/oauth/authorize",
-      "tokenUrlPlaceholder": "https://provider.com/oauth/token",
-      "userInfoUrlPlaceholder": "https://provider.com/oauth/userinfo",
-      "usernameClaim": "用户名 Claim",
-      "usernameClaimPlaceholder": "例如：preferred_username",
-      "groupsClaim": "用户组 Claim",
-      "groupsClaimPlaceholder": "例如：memberOf",
-      "allowedGroups": "允许的用户组",
-      "allowedGroupsPlaceholder": "例如：admin, developers（逗号分隔）",
-      "or": "或",
-      "section": {
-        "basic": "基本信息",
-        "endpoint": "OAuth 端点",
-        "advanced": "高级设置",
-        "status": "状态"
-      },
-      "validation": {
-        "issuerOrUrl": "请填写 Issuer，或填写完整的 OAuth URL（授权、令牌、用户信息）。"
-      }
-    }
-  },
-  "userManagement": {
-    "title": "用户管理",
-    "resourceType": "用户",
-    "actions": {
-      "add": "添加密码用户",
-      "editUser": "编辑用户",
-      "search": "搜索用户..."
-    },
-    "table": {
-      "id": "ID",
-      "username": "用户名",
-      "name": "名称",
-      "avatar": "头像",
-      "status": "状态",
-      "provider": "身份提供者",
-      "createdAt": "创建时间",
-      "lastLoginAt": "最后登录时间",
-      "roles": "角色"
-    },
-    "dialog": {
-      "editTitle": "编辑用户",
-      "addTitle": "添加密码用户",
-      "resetPassword": "重置密码",
-      "assignRoles": "分配角色"
-    },
-    "empty": {
-      "title": "暂无用户",
-      "description": "添加您的第一个用户以开始使用"
-    },
-    "filters": {
-      "role": "全部角色",
-      "allRoles": "全部角色"
-    },
-    "errors": {
-      "loadFailed": "加载用户失败"
-    },
-    "messages": {
-      "created": "用户创建成功",
-      "updated": "用户更新成功",
-      "deleted": "用户删除成功",
-      "createError": "创建用户失败",
-      "updateError": "更新用户失败",
-      "deleteError": "删除用户失败",
-      "resetPassword": "密码重置成功",
-      "resetPasswordError": "重置密码失败"
-    }
-  },
   "initialization": {
     "title": "初始化设置",
     "welcome": "欢迎！让我们来设置您的 Kite Dashboard",
@@ -1288,56 +1027,10 @@
       "confirm": "确认回滚",
       "success": "资源回滚成功",
       "error": "资源回滚失败"
-    }
-  },
-  "apikeyManagement": {
-    "title": "API 密钥管理",
-    "resourceType": "API 密钥",
-    "description": "管理用于程序化访问的 API 密钥",
-    "actions": {
-      "add": "添加 API 密钥",
-      "copy": "复制",
-      "delete": "删除"
     },
-    "table": {
-      "name": "名称",
-      "key": "API 密钥",
-      "createdAt": "创建时间",
-      "lastUsed": "最后使用",
-      "roles": "角色",
-      "actions": "操作"
-    },
-    "empty": {
-      "title": "暂无 API 密钥",
-      "description": "创建您的第一个 API 密钥以开始使用"
-    },
-    "messages": {
-      "created": "API 密钥创建成功",
-      "deleted": "API 密钥删除成功",
-      "createError": "创建 API 密钥失败",
-      "deleteError": "删除 API 密钥失败",
-      "copied": "API 密钥已复制到剪贴板",
-      "copyError": "复制 API 密钥失败"
-    },
-    "errors": {
-      "loadFailed": "加载 API 密钥失败"
-    },
-    "deleteConfirmation": "确定要删除此 API 密钥吗？此操作无法撤销。",
-    "neverUsed": "从未使用",
-    "dialog": {
-      "createTitle": "创建 API 密钥",
-      "editTitle": "编辑 API 密钥",
-      "title": "创建 API 密钥",
-      "description": "创建一个新的 API 密钥以进行程序化访问。",
-      "name": "名称",
-      "nameLabel": "名称",
-      "namePlaceholder": "例如：生产环境 API 密钥",
-      "nameRequired": "名称为必填项",
-      "creating": "创建中...",
-      "createButton": "创建",
-      "keyLabel": "API 密钥",
-      "assignRoles": "分配角色"
-    }
+    "errorDetails": "错误详情",
+    "noErrorMessage": "没有可用的错误信息",
+    "viewError": "查看错误"
   },
   "deleteConfirmation": {
     "title": "删除{{type}}",
@@ -1361,7 +1054,6 @@
     "history": "聊天记录",
     "openInNewTab": "在新标签页中打开",
     "close": "关闭",
-    "windowTitle": "Kite AI 对话",
     "composer": {
       "placeholder": "询问当前集群..."
     },

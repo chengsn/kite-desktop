@@ -6,17 +6,24 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react'
-import { Link } from 'react-router-dom'
-import { IconLoader, IconTrash } from '@tabler/icons-react'
+import { IconTrash } from '@tabler/icons-react'
+import * as yaml from 'js-yaml'
 import type { Secret, Service, ServicePort } from 'kubernetes-types/core/v1'
 import type {
   Ingress,
   IngressBackend,
   IngressClass,
 } from 'kubernetes-types/networking/v1'
-import * as yaml from 'js-yaml'
-import { CircleHelp, ExternalLink, Pencil, Plus, Save, Trash2 } from 'lucide-react'
+import {
+  CircleHelp,
+  ExternalLink,
+  Pencil,
+  Plus,
+  Save,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { trackResourceAction } from '@/lib/analytics'
@@ -35,11 +42,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover'
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { ResponsiveTabs } from '@/components/ui/responsive-tabs'
 import {
   Select,
@@ -56,12 +59,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Tooltip,
   TooltipContent,
@@ -71,10 +69,12 @@ import { DescribeDialog } from '@/components/describe-dialog'
 import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LabelsAnno } from '@/components/lables-anno'
+import { PageHeader } from '@/components/page-header'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { YamlEditor } from '@/components/yaml-editor'
 
 interface IngressRouteRow {
@@ -236,7 +236,9 @@ function keyValueItemsToRecord(items: EditableKeyValueItem[]) {
   }, {})
 }
 
-function editableTlsItemsFromIngress(ingress: Ingress): EditableIngressTlsItem[] {
+function editableTlsItemsFromIngress(
+  ingress: Ingress
+): EditableIngressTlsItem[] {
   return (ingress.spec?.tls || []).flatMap((tls) => {
     const hosts = tls.hosts?.length ? tls.hosts : ['']
 
@@ -248,25 +250,26 @@ function editableTlsItemsFromIngress(ingress: Ingress): EditableIngressTlsItem[]
   })
 }
 
-function editableGroupsFromIngress(ingress: Ingress): EditableIngressHostGroup[] {
+function editableGroupsFromIngress(
+  ingress: Ingress
+): EditableIngressHostGroup[] {
   const groups = (ingress.spec?.rules || []).map((rule) => ({
     id: nextEditItemId('host'),
     host: rule.host || '',
     tlsSecret: '',
-    routes:
-      rule.http?.paths?.map((path) => {
-        const service = path.backend.service
-        const servicePort = service?.port?.number ?? service?.port?.name ?? ''
+    routes: rule.http?.paths?.map((path) => {
+      const service = path.backend.service
+      const servicePort = service?.port?.number ?? service?.port?.name ?? ''
 
-        return {
-          id: nextEditItemId('route'),
-          path: path.path || '/',
-          pathType: path.pathType || 'Prefix',
-          serviceName: service?.name || path.backend.resource?.name || '',
-          servicePort: String(servicePort),
-          isNew: false,
-        }
-      }) || [createEmptyRoute(false)],
+      return {
+        id: nextEditItemId('route'),
+        path: path.path || '/',
+        pathType: path.pathType || 'Prefix',
+        serviceName: service?.name || path.backend.resource?.name || '',
+        servicePort: String(servicePort),
+        isNew: false,
+      }
+    }) || [createEmptyRoute(false)],
   }))
 
   return groups.length > 0 ? groups : [createEmptyHostGroup()]
@@ -437,7 +440,9 @@ function secretToOption(secret: Secret): ComboboxOption | null {
   }
 }
 
-function ingressClassToOption(ingressClass: IngressClass): ComboboxOption | null {
+function ingressClassToOption(
+  ingressClass: IngressClass
+): ComboboxOption | null {
   const ingressClassName = ingressClass.metadata?.name
 
   if (!ingressClassName) {
@@ -455,9 +460,9 @@ function toComboboxOptions<T>(
   items: T[] | undefined,
   mapper: (item: T) => ComboboxOption | null
 ) {
-  return (items || []).map(mapper).filter((item): item is ComboboxOption =>
-    Boolean(item)
-  )
+  return (items || [])
+    .map(mapper)
+    .filter((item): item is ComboboxOption => Boolean(item))
 }
 
 function FieldHelp({
@@ -556,8 +561,12 @@ function HostRouteGroup({
             <TableRow>
               <TableHead>{t('ingresses.path', 'Path')}</TableHead>
               <TableHead>{t('ingresses.pathType', 'Path type')}</TableHead>
-              <TableHead>{t('ingresses.serviceName', 'Service name')}</TableHead>
-              <TableHead>{t('ingresses.servicePort', 'Service port')}</TableHead>
+              <TableHead>
+                {t('ingresses.serviceName', 'Service name')}
+              </TableHead>
+              <TableHead>
+                {t('ingresses.servicePort', 'Service port')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -623,7 +632,9 @@ function IngressRoutesTable({
       existingServiceNames
     )
 
-    return defaultBackendGroup ? [...routeGroups, defaultBackendGroup] : routeGroups
+    return defaultBackendGroup
+      ? [...routeGroups, defaultBackendGroup]
+      : routeGroups
   }, [existingServiceNames, ingress])
 
   return (
@@ -869,7 +880,9 @@ function KeyValueEditor({
               aria-label={keyLabel}
               value={item.key}
               placeholder={t('common.key', 'Key')}
-              onChange={(event) => updateItem(item.id, 'key', event.target.value)}
+              onChange={(event) =>
+                updateItem(item.id, 'key', event.target.value)
+              }
             />
             <Input
               aria-label={valueLabel}
@@ -884,7 +897,9 @@ function KeyValueEditor({
               variant="ghost"
               size="icon"
               aria-label={t('common.remove', 'Remove')}
-              onClick={() => onChange(items.filter((entry) => entry.id !== item.id))}
+              onClick={() =>
+                onChange(items.filter((entry) => entry.id !== item.id))
+              }
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -1145,9 +1160,7 @@ function IngressConfigEditor({
           <TabsTrigger value="tls">
             {t('ingresses.certificatesTab', 'Certificates')}
           </TabsTrigger>
-          <TabsTrigger value="class">
-            {t('ingresses.ingressClass')}
-          </TabsTrigger>
+          <TabsTrigger value="class">{t('ingresses.ingressClass')}</TabsTrigger>
           <TabsTrigger value="metadata">
             {t('ingresses.metadataSettings', 'Metadata')}
           </TabsTrigger>
@@ -1159,9 +1172,7 @@ function IngressConfigEditor({
                 <h3 className="text-sm font-semibold">
                   {t('ingresses.hostGroups', 'Host groups')}
                 </h3>
-                <FieldHelp
-                  label={t('ingresses.hostGroupsHelpLabel')}
-                >
+                <FieldHelp label={t('ingresses.hostGroupsHelpLabel')}>
                   {t('ingresses.hostGroupsHelp')}
                 </FieldHelp>
               </div>
@@ -1170,7 +1181,10 @@ function IngressConfigEditor({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  setHostGroups((current) => [createEmptyHostGroup(), ...current])
+                  setHostGroups((current) => [
+                    createEmptyHostGroup(),
+                    ...current,
+                  ])
                 }
               >
                 <Plus className="h-4 w-4" />
@@ -1248,7 +1262,9 @@ function IngressConfigEditor({
                     >
                       <div className="space-y-1.5">
                         <FieldLabel
-                          help={route.isNew ? t('ingresses.pathHelp') : undefined}
+                          help={
+                            route.isNew ? t('ingresses.pathHelp') : undefined
+                          }
                           helpLabel={t('ingresses.pathHelpLabel')}
                         >
                           {t('ingresses.path', 'Path')}
@@ -1312,7 +1328,10 @@ function IngressConfigEditor({
                         <SearchableFreeformInput
                           label={t('ingresses.serviceName', 'Service name')}
                           value={route.serviceName}
-                          placeholder={t('ingresses.serviceName', 'Service name')}
+                          placeholder={t(
+                            'ingresses.serviceName',
+                            'Service name'
+                          )}
                           options={serviceOptions}
                           onChange={(value) =>
                             selectServiceForRoute(group.id, route, value)
@@ -1333,7 +1352,10 @@ function IngressConfigEditor({
                         <SearchableFreeformInput
                           label={t('ingresses.servicePort', 'Service port')}
                           value={route.servicePort}
-                          placeholder={t('ingresses.servicePort', 'Service port')}
+                          placeholder={t(
+                            'ingresses.servicePort',
+                            'Service port'
+                          )}
                           options={getServicePortOptions(route.serviceName)}
                           onChange={(event) =>
                             updateRoute(
@@ -1375,9 +1397,7 @@ function IngressConfigEditor({
                 <h3 className="text-sm font-semibold">
                   {t('ingresses.tlsSettings', 'TLS settings')}
                 </h3>
-                <FieldHelp
-                  label={t('ingresses.tlsSettingsHelpLabel')}
-                >
+                <FieldHelp label={t('ingresses.tlsSettingsHelpLabel')}>
                   {t('ingresses.tlsSettingsHelp')}
                 </FieldHelp>
               </div>
@@ -1465,9 +1485,7 @@ function IngressConfigEditor({
                   <h3 className="text-sm font-semibold">
                     <span className="inline-flex items-center gap-1.5">
                       {t('ingresses.ingressClass')}
-                      <FieldHelp
-                        label={t('ingresses.ingressClassHelpLabel')}
-                      >
+                      <FieldHelp label={t('ingresses.ingressClassHelpLabel')}>
                         {t('ingresses.ingressClassHelp')}
                       </FieldHelp>
                     </span>
@@ -1551,7 +1569,11 @@ function IngressConfigEditor({
             >
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="button" onClick={handleConfirmSave} disabled={isSaving}>
+            <Button
+              type="button"
+              onClick={handleConfirmSave}
+              disabled={isSaving}
+            >
               {isSaving
                 ? t('common.saving', 'Saving')
                 : t('ingresses.confirmSaveConfig', 'Confirm save')}
@@ -1582,7 +1604,10 @@ export function IngressDetail(props: { name: string; namespace?: string }) {
   } = useResource('ingresses', name, namespace)
   const { data: services = [] } = useResources('services', namespace)
   const { data: secrets = [] } = useResources('secrets', namespace)
-  const { data: ingressClasses = [] } = useResources('ingressclasses', undefined)
+  const { data: ingressClasses = [] } = useResources(
+    'ingressclasses',
+    undefined
+  )
   const existingServiceNames = useMemo(
     () =>
       new Set(
@@ -1657,18 +1682,7 @@ export function IngressDetail(props: { name: string; namespace?: string }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>{t('detail.status.loading', { resource: 'ingress' })}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isError || !data) {
@@ -1691,47 +1705,44 @@ export function IngressDetail(props: { name: string; namespace?: string }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{name}</h1>
-          {namespace && (
-            <p className="text-muted-foreground">
-              {t('detail.fields.namespace')}:{' '}
-              <span className="font-medium">{namespace}</span>
-            </p>
-          )}
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-          >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType="ingresses"
-            namespace={namespace}
-            name={name}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => openEditDialog()}
-          >
-            <Pencil className="h-4 w-4" />
-            {t('ingresses.editConfig', 'Edit config')}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={name}
+        description={
+          <>
+            {namespace && (
+              <p className="text-muted-foreground">
+                {t('detail.fields.namespace')}:{' '}
+                <span className="font-medium">{namespace}</span>
+              </p>
+            )}
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType="ingresses"
+          namespace={namespace}
+          name={name}
+        />
+        <Button variant="outline" size="sm" onClick={() => openEditDialog()}>
+          <Pencil className="h-4 w-4" />
+          {t('ingresses.editConfig', 'Edit config')}
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[
@@ -1836,7 +1847,11 @@ export function IngressDetail(props: { name: string; namespace?: string }) {
             value: 'events',
             label: t('detail.tabs.events'),
             content: (
-              <EventTable resource="ingresses" namespace={namespace} name={name} />
+              <EventTable
+                resource="ingresses"
+                namespace={namespace}
+                name={name}
+              />
             ),
           },
           {
@@ -1865,7 +1880,9 @@ export function IngressDetail(props: { name: string; namespace?: string }) {
       >
         <DialogContent className="flex max-h-[86vh] !max-w-6xl flex-col sm:!max-w-6xl">
           <DialogHeader>
-            <DialogTitle>{t('ingresses.editConfig', 'Edit config')}</DialogTitle>
+            <DialogTitle>
+              {t('ingresses.editConfig', 'Edit config')}
+            </DialogTitle>
             <DialogDescription>
               {t(
                 'ingresses.editConfigDescription',

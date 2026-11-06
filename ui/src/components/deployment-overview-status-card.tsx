@@ -16,18 +16,18 @@ function StatusIcon(props: { status: DeploymentOverviewViewModel['status'] }) {
   const { status } = props
 
   if (status === 'Available') {
-    return <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+    return <CheckCircle2 className="h-5 w-5 text-success" />
   }
 
   if (status === 'Paused' || status === 'Scaled Down') {
-    return <PauseCircle className="h-5 w-5 text-slate-500" />
+    return <PauseCircle className="h-5 w-5 text-muted-foreground" />
   }
 
   if (status === 'Progressing') {
-    return <Clock3 className="h-5 w-5 text-amber-600" />
+    return <Clock3 className="h-5 w-5 text-warning" />
   }
 
-  return <AlertCircle className="h-5 w-5 text-rose-600" />
+  return <AlertCircle className="h-5 w-5 text-destructive" />
 }
 
 function Metric(props: { label: string; value: string; testId?: string }) {
@@ -99,8 +99,8 @@ export function DeploymentOverviewStatusCard(props: {
         </div>
 
         {!overview.isObserved ? (
-          <Alert variant="default" className="border-amber-300 bg-amber-50/60">
-            <AlertCircle className="h-4 w-4 text-amber-700" />
+          <Alert variant="default" className="border-warning/40 bg-warning/10">
+            <AlertCircle className="h-4 w-4 text-warning" />
             <AlertTitle>
               {t('deploymentOverview.rolloutPendingTitle')}
             </AlertTitle>

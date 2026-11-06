@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  IconLoader,
-  IconReload,
-  IconScale,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconReload, IconScale, IconTrash } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
 import { StatefulSet } from 'kubernetes-types/apps/v1'
 import { Container } from 'kubernetes-types/core/v1'
@@ -36,12 +31,14 @@ import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LogViewer } from '@/components/log-viewer'
 import { OpenPodTerminalButton } from '@/components/open-pod-terminal-button'
+import { PageHeader } from '@/components/page-header'
 import { PodMonitoring } from '@/components/pod-monitoring'
 import { PodTable } from '@/components/pod-table'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { StatefulSetOverviewInfoCard } from '@/components/statefulset-overview-info-card'
 import { VolumeTable } from '@/components/volume-table'
 import { YamlEditor } from '@/components/yaml-editor'
@@ -277,22 +274,7 @@ export function StatefulSetDetail(props: { namespace: string; name: string }) {
   }
 
   if (isLoadingStatefulSet) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', {
-                  resource: t('resourceKind.statefulset'),
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isStatefulSetError || !statefulset) {
@@ -311,127 +293,125 @@ export function StatefulSetDetail(props: { namespace: string; name: string }) {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{metadata?.name}</h1>
-          <p className="text-muted-foreground">
-            {t('detail.fields.namespace')}:{' '}
-            <span className="font-medium">{namespace}</span>
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton variant="outline" size="sm" onClick={handleRefresh}>
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType="statefulsets"
-            namespace={namespace}
-            name={name}
-          />
-          <OpenPodTerminalButton
-            namespace={namespace}
-            pods={relatedPods}
-            containers={spec?.template.spec?.containers}
-            initContainers={spec?.template.spec?.initContainers}
-            source={`statefulset/${name}`}
-          />
-          <Popover
-            open={isScalePopoverOpen}
-            onOpenChange={setIsScalePopoverOpen}
-          >
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconScale className="w-4 h-4" />
+      <PageHeader
+        title={metadata?.name}
+        description={
+          <>
+            <p className="text-muted-foreground">
+              {t('detail.fields.namespace')}:{' '}
+              <span className="font-medium">{namespace}</span>
+            </p>
+          </>
+        }
+      >
+        <RefreshButton variant="outline" size="sm" onClick={handleRefresh}>
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType="statefulsets"
+          namespace={namespace}
+          name={name}
+        />
+        <OpenPodTerminalButton
+          namespace={namespace}
+          pods={relatedPods}
+          containers={spec?.template.spec?.containers}
+          initContainers={spec?.template.spec?.initContainers}
+          source={`statefulset/${name}`}
+        />
+        <Popover open={isScalePopoverOpen} onOpenChange={setIsScalePopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm">
+              <IconScale className="w-4 h-4" />
+              {t('detail.buttons.scale')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-medium">
+                  {t('detail.buttons.scale')} StatefulSet
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t('detail.dialogs.scaleDeployment.description')}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="replicas">
+                  {t('detail.dialogs.scaleDeployment.replicas')}
+                </Label>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-9 p-0"
+                    onClick={() =>
+                      setScaleReplicas(Math.max(0, scaleReplicas - 1))
+                    }
+                    disabled={scaleReplicas <= 0}
+                  >
+                    -
+                  </Button>
+                  <Input
+                    id="replicas"
+                    type="number"
+                    min="0"
+                    value={scaleReplicas}
+                    onChange={(e) =>
+                      setScaleReplicas(parseInt(e.target.value) || 0)
+                    }
+                    className="text-center"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 w-9 p-0"
+                    onClick={() => setScaleReplicas(scaleReplicas + 1)}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+              <Button onClick={handleScale} className="w-full">
                 {t('detail.buttons.scale')}
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">
-                    {t('detail.buttons.scale')} StatefulSet
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t('detail.dialogs.scaleDeployment.description')}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="replicas">
-                    {t('detail.dialogs.scaleDeployment.replicas')}
-                  </Label>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 w-9 p-0"
-                      onClick={() =>
-                        setScaleReplicas(Math.max(0, scaleReplicas - 1))
-                      }
-                      disabled={scaleReplicas <= 0}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="replicas"
-                      type="number"
-                      min="0"
-                      value={scaleReplicas}
-                      onChange={(e) =>
-                        setScaleReplicas(parseInt(e.target.value) || 0)
-                      }
-                      className="text-center"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 w-9 p-0"
-                      onClick={() => setScaleReplicas(scaleReplicas + 1)}
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
-                <Button onClick={handleScale} className="w-full">
-                  {t('detail.buttons.scale')}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Popover
-            open={isRestartPopoverOpen}
-            onOpenChange={setIsRestartPopoverOpen}
-          >
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconReload className="w-4 h-4" />
-                {t('detail.buttons.restart')}
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Popover
+          open={isRestartPopoverOpen}
+          onOpenChange={setIsRestartPopoverOpen}
+        >
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm">
+              <IconReload className="w-4 h-4" />
+              {t('detail.buttons.restart')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="space-y-2">
+              <p className="text-sm">
+                {t('detail.dialogs.restartDeployment.description')}
+              </p>
+              <Button
+                onClick={handleRestart}
+                className="w-full"
+                variant="outline"
+              >
+                {t('detail.dialogs.restartDeployment.restartButton')}
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-2">
-                <p className="text-sm">
-                  {t('detail.dialogs.restartDeployment.description')}
-                </p>
-                <Button
-                  onClick={handleRestart}
-                  className="w-full"
-                  variant="outline"
-                >
-                  {t('detail.dialogs.restartDeployment.restartButton')}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

@@ -96,22 +96,22 @@ function StatusIcon(props: { status: StatefulSetOverviewViewModel['status'] }) {
   const { status } = props
 
   if (status === 'Available') {
-    return <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+    return <CheckCircle2 className="h-4 w-4 text-success" />
   }
 
   if (status === 'Scaled Down') {
-    return <PauseCircle className="h-4 w-4 text-slate-500" />
+    return <PauseCircle className="h-4 w-4 text-muted-foreground" />
   }
 
   if (status === 'Pending') {
-    return <DatabaseZap className="h-4 w-4 text-sky-600" />
+    return <DatabaseZap className="h-4 w-4 text-info" />
   }
 
   if (status === 'Progressing') {
-    return <Clock3 className="h-4 w-4 text-amber-600" />
+    return <Clock3 className="h-4 w-4 text-warning" />
   }
 
-  return <AlertCircle className="h-4 w-4 text-rose-600" />
+  return <AlertCircle className="h-4 w-4 text-destructive" />
 }
 
 export function StatefulSetOverviewInfoCard(props: {

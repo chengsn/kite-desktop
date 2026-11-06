@@ -43,7 +43,8 @@ vi.mock('@/lib/api', async () => {
 })
 
 describe('ResourceTable batch delete confirmation', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en')
     ;(
       globalThis as typeof globalThis & {
         ResizeObserver: new (callback: ResizeObserverCallback) => ResizeObserver
@@ -98,8 +99,81 @@ describe('ResourceTable batch delete confirmation', () => {
     expect(scrollContainer?.getAttribute('style') ?? '').not.toContain('height')
   })
 
+  it('marks sortable headers with aria-sort', () => {
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.name', {
+            header: 'Name',
+            cell: ({ row }) => row.original.metadata?.name,
+          }),
+        ]}
+      />
+    )
+
+    const header = screen.getByRole('columnheader', { name: 'Name' })
+    expect(header).toHaveAttribute('aria-sort', 'none')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Name' }))
+    expect(header).toHaveAttribute('aria-sort', 'ascending')
+  })
+
+  it('consolidates column filters into a single Filters popover', async () => {
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.namespace', {
+            header: 'Namespace',
+            enableColumnFilter: true,
+            cell: ({ row }) => row.original.metadata?.namespace,
+          }),
+        ]}
+      />
+    )
+
+    expect(screen.queryByText('Filter Namespace')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Namespace' })
+    ).toBeInTheDocument()
+  })
+
+  it('keeps the Filters control available when the result set is empty', () => {
+    resourcesData = []
+    const columnHelper = createColumnHelper<Deployment>()
+
+    render(
+      <ResourceTable
+        resourceName="Deployments"
+        resourceType="deployments"
+        clusterScope={true}
+        columns={[
+          columnHelper.accessor('metadata.namespace', {
+            header: 'Namespace',
+            enableColumnFilter: true,
+            cell: ({ row }) => row.original.metadata?.namespace,
+          }),
+        ]}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Filters' })).toBeInTheDocument()
+  })
+
   it('requires the global confirmation keyword before deleting selected rows', async () => {
-    void i18n.changeLanguage('zh')
+    await i18n.changeLanguage('zh')
 
     const columnHelper = createColumnHelper<Deployment>()
 

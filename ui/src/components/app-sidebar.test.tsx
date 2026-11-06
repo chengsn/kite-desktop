@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
+import { describe, expect, it, vi } from 'vitest'
 
 import { AppSidebar } from './app-sidebar'
 import { SidebarProvider } from './ui/sidebar'
@@ -14,13 +14,12 @@ vi.mock('react-i18next', async (importOriginal) => {
   return {
     ...actual,
     useTranslation: () => ({
-      t: (
-        key: string,
-        fallback?: string | { defaultValue?: string }
-      ) =>
-        typeof fallback === 'string'
-          ? fallback
-          : fallback?.defaultValue ?? key,
+      t: (key: string, fallback?: string | { defaultValue?: string }) =>
+        key === 'sidebar.newBadge'
+          ? 'NEW-BADGE'
+          : typeof fallback === 'string'
+            ? fallback
+            : (fallback?.defaultValue ?? key),
     }),
   }
 })
@@ -100,7 +99,7 @@ describe('AppSidebar', () => {
       name: 'New version available',
     })
 
-    expect(updateLink).toHaveTextContent('new')
+    expect(updateLink).toHaveTextContent('NEW-BADGE')
 
     await userEvent.click(updateLink)
 
@@ -187,7 +186,9 @@ describe('AppSidebar', () => {
 
     expect(container.querySelector('[data-collapsible="icon"]')).toBeTruthy()
     expect(screen.getByRole('link', { name: /kite logo/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'nav.favorites' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'nav.favorites' })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'nav.serviceaccounts' })
     ).toBeInTheDocument()

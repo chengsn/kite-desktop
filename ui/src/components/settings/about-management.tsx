@@ -43,6 +43,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+
 import AboutBanner from '../../../../docs/src/banner.svg'
 
 function InfoItem({
@@ -216,8 +217,8 @@ function UpdateStatus({
 
   if (result.comparison === 'local_newer') {
     return (
-      <Alert className="border-amber-500/25 bg-amber-500/5">
-        <IconArrowUpRight className="h-4 w-4 text-amber-600" />
+      <Alert className="border-warning/25 bg-warning/5">
+        <IconArrowUpRight className="h-4 w-4 text-warning" />
         <AlertTitle>
           {t('aboutManagement.update.localNewerTitle', 'Local build is newer')}
         </AlertTitle>
@@ -246,8 +247,8 @@ function UpdateStatus({
   }
 
   return (
-    <Alert className="border-emerald-500/25 bg-emerald-500/5">
-      <IconRosetteDiscountCheck className="h-4 w-4 text-emerald-600" />
+    <Alert className="border-success/25 bg-success/5">
+      <IconRosetteDiscountCheck className="h-4 w-4 text-success" />
       <AlertTitle>
         {t('aboutManagement.update.upToDateTitle', 'You are up to date')}
       </AlertTitle>
@@ -399,7 +400,8 @@ export function AboutManagement() {
                     )}
                   </p>
                   <div className="inline-flex items-center rounded-full border border-white/80 bg-background/88 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
-                    {t('aboutManagement.versionLabel', 'Version')} v{currentVersion}
+                    {t('aboutManagement.versionLabel', 'Version')} v
+                    {currentVersion}
                   </div>
                 </div>
               </div>

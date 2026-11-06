@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useTerminal } from '@/contexts/terminal-context'
 import { IconCircleCheckFilled, IconLoader } from '@tabler/icons-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { createColumnHelper } from '@tanstack/react-table'
@@ -17,7 +18,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { useTerminal } from '@/contexts/terminal-context'
 import { patchResource } from '@/lib/api'
 import {
   formatDate,
@@ -128,7 +128,7 @@ export function StatefulSetListPage() {
           return (
             <Badge variant="outline" className="text-muted-foreground px-1.5">
               {isAvailable ? (
-                <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+                <IconCircleCheckFilled className="fill-success" />
               ) : (
                 <IconLoader className="animate-spin" />
               )}

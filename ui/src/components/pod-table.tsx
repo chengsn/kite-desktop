@@ -1,20 +1,20 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { IconTrash } from '@tabler/icons-react'
 import {
   ColumnDef,
   ColumnFiltersState,
-  FilterFn,
-  PaginationState,
-  SortingState,
   createColumnHelper,
+  FilterFn,
   getCoreRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  PaginationState,
+  SortingState,
   useReactTable,
 } from '@tanstack/react-table'
-import { IconLoader, IconTrash } from '@tabler/icons-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -33,11 +33,17 @@ import { DescribeDialog } from './describe-dialog'
 import { MetricCell } from './metrics-cell'
 import { OpenPodTerminalButton } from './open-pod-terminal-button'
 import { PodStatusIcon } from './pod-status-icon'
+import { TableSkeleton } from './resource-state'
 import { ResourceTableView } from './resource-table-view'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-const arrIncludesSome: FilterFn<PodWithMetrics> = (row, columnId, filterValue) => {
+
+const arrIncludesSome: FilterFn<PodWithMetrics> = (
+  row,
+  columnId,
+  filterValue
+) => {
   if (!Array.isArray(filterValue) || filterValue.length === 0) return true
   const value = String(row.getValue(columnId) ?? '')
   return filterValue.includes(value)
@@ -69,16 +75,13 @@ export function PodTable(props: {
     (): ColumnDef<PodWithMetrics>[] => [
       ...(props.showNamespace
         ? [
-            columnHelper.accessor(
-              (pod) => pod.metadata?.namespace || '-',
-              {
-                id: 'namespace',
-                header: t('resourceTable.namespace'),
-                cell: ({ getValue }) => (
-                  <Badge variant="outline">{getValue()}</Badge>
-                ),
-              }
-            ),
+            columnHelper.accessor((pod) => pod.metadata?.namespace || '-', {
+              id: 'namespace',
+              header: t('resourceTable.namespace'),
+              cell: ({ getValue }) => (
+                <Badge variant="outline">{getValue()}</Badge>
+              ),
+            }),
           ]
         : []),
       columnHelper.accessor((pod) => pod.metadata?.name || '-', {
@@ -95,32 +98,38 @@ export function PodTable(props: {
           )
         },
       }),
-      columnHelper.accessor((pod) => {
-        const status = getPodStatus(pod)
-        return status.readyContainers / Math.max(status.totalContainers, 1)
-      }, {
-        id: 'readyRatio',
-        header: t('pods.ready'),
-        cell: ({ row }) => {
-          const status = getPodStatus(row.original)
-          return `${status.readyContainers} / ${status.totalContainers}`
+      columnHelper.accessor(
+        (pod) => {
+          const status = getPodStatus(pod)
+          return status.readyContainers / Math.max(status.totalContainers, 1)
         },
-      }),
-      columnHelper.accessor((pod) => {
-        const status = getPodStatus(pod)
-        const numericRestarts = Number.parseInt(status.restartString, 10)
-        return Number.isNaN(numericRestarts) ? 0 : numericRestarts
-      }, {
-        id: 'restarts',
-        header: t('pods.restarts'),
-        cell: ({ getValue }) => {
-          return (
-            <span className="text-muted-foreground text-sm">
-              {String(getValue())}
-            </span>
-          )
+        {
+          id: 'readyRatio',
+          header: t('pods.ready'),
+          cell: ({ row }) => {
+            const status = getPodStatus(row.original)
+            return `${status.readyContainers} / ${status.totalContainers}`
+          },
+        }
+      ),
+      columnHelper.accessor(
+        (pod) => {
+          const status = getPodStatus(pod)
+          const numericRestarts = Number.parseInt(status.restartString, 10)
+          return Number.isNaN(numericRestarts) ? 0 : numericRestarts
         },
-      }),
+        {
+          id: 'restarts',
+          header: t('pods.restarts'),
+          cell: ({ getValue }) => {
+            return (
+              <span className="text-muted-foreground text-sm">
+                {String(getValue())}
+              </span>
+            )
+          },
+        }
+      ),
       columnHelper.accessor((pod) => getPodStatus(pod).reason, {
         id: 'status',
         header: t('common.status'),
@@ -137,15 +146,18 @@ export function PodTable(props: {
       columnHelper.accessor(
         (pod) =>
           pod.spec?.containers
-            ?.map((container) =>
-              `${container.name}: ${toCompactImageName(container.image || '-')}`
+            ?.map(
+              (container) =>
+                `${container.name}: ${toCompactImageName(container.image || '-')}`
             )
             .join(' | ') || '-',
         {
           id: 'imageSummary',
           header: t('containerEditor.tabs.image'),
           cell: ({ row }) => (
-            <ContainerImagesSummary containers={row.original.spec?.containers} />
+            <ContainerImagesSummary
+              containers={row.original.spec?.containers}
+            />
           ),
         }
       ),
@@ -310,12 +322,7 @@ export function PodTable(props: {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <IconLoader className="animate-spin mr-2" />
-        {t('podTable.loading')}
-      </div>
-    )
+    return <TableSkeleton rows={5} columns={4} />
   }
   return (
     <Card>

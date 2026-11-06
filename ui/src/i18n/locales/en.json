@@ -1,4 +1,8 @@
 {
+  "app": {
+    "name": "Kite",
+    "tagline": "Kubernetes desktop client"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -38,7 +42,6 @@
     "manageAnnotations": "Manage annotations",
     "copyName": "Copy name",
     "copyImage": "Copy image",
-    "available": "Available",
     "history": "History",
     "back": "Back",
     "forward": "Forward",
@@ -54,7 +57,16 @@
     "moreCount": "+{{count}} more",
     "reconnect": "Reconnect",
     "unknown": "Unknown",
-    "na": "N/A"
+    "na": "N/A",
+    "copyNamespace": "Copy namespace",
+    "description": "Description",
+    "key": "Key",
+    "noData": "No data",
+    "remove": "Remove",
+    "saving": "Saving...",
+    "value": "Value",
+    "version": "Version",
+    "yaml": "YAML"
   },
   "modeToggle": {
     "toggleTheme": "Toggle theme"
@@ -119,6 +131,7 @@
     "unsetGlobalSuccess": "Global sidebar disabled successfully",
     "unsetGlobalError": "Failed to disable global sidebar",
     "newVersionAvailable": "New version available",
+    "newBadge": "New",
     "mobileTitle": "Sidebar",
     "mobileDescription": "Displays the mobile sidebar.",
     "toggle": "Toggle sidebar",
@@ -138,7 +151,15 @@
     "showItem": "Show item",
     "hideItem": "Hide item",
     "moveUp": "Move up",
-    "moveDown": "Move down"
+    "moveDown": "Move down",
+    "collapse": "Collapse",
+    "createGroup": "Create New CRD Group",
+    "customGroupItem": "custom group item",
+    "customize": "Customize sidebar",
+    "customizeTitle": "Customize sidebar",
+    "deleteGroupItemNote": "This will remove the item from custom group \"{{groupName}}\" only.",
+    "deleteGroupNote": "This will remove the custom group and its sidebar entries only. No cluster resources will be deleted.",
+    "expand": "Expand"
   },
   "nav": {
     "overview": "Overview",
@@ -325,7 +346,7 @@
     "removeCertificate": "Remove certificate",
     "noCertificates": "No certificates configured",
     "ingressClassOptionCount": "{{count}} IngressClass option available",
-    "ingressClassOptionCount_plural": "{{count}} IngressClass options available",
+    "ingressClassOptionCount_other": "{{count}} IngressClass options available",
     "noIngressClassOptions": "No IngressClass options found in this cluster",
     "selectOption": "Select option",
     "searchOptions": "Search options...",
@@ -448,7 +469,8 @@
     "terminating": "Terminating",
     "crashLoopBackOff": "CrashLoopBackOff",
     "containerCreating": "ContainerCreating",
-    "imagePullBackOff": "ImagePullBackOff"
+    "imagePullBackOff": "ImagePullBackOff",
+    "notReady": "NotReady"
   },
   "monitoring": {
     "cpuUsage": "CPU Usage",
@@ -511,8 +533,6 @@
       "contactSupport": "Please try again or contact support if the issue persists.",
       "invalidCredentials": "Invalid username or password",
       "unknownError": "An unknown error occurred",
-      "userDisabled": "User Disabled",
-      "userDisabledMessage": "Your user account has been disabled. Please contact your administrator for more information.",
       "notInAllowedGroups": "Authentication succeeded, but your account is not a member of the allowed groups in {{provider}}.",
       "notInAllowedGroupsDetails": "Please contact your administrator to be added to an allowed group."
     }
@@ -537,6 +557,8 @@
   "resourceTable": {
     "errorLoading": "Error loading {{resourceName}}",
     "tryAgain": "Try Again",
+    "filters": "Filters",
+    "clearAllFilters": "Clear all filters",
     "delete": "Delete",
     "deleteSelected": "Delete ({{count}})",
     "selectAll": "Select All ({{count}})",
@@ -609,8 +631,10 @@
       "oauth": "Authentication",
       "rbac": "RBAC",
       "users": "User",
-      "apikeys": "API Keys"
-    }
+      "apikeys": "API Keys",
+      "p8s": "Prometheus"
+    },
+    "nav": "Settings"
   },
   "desktopManagement": {
     "title": "Desktop",
@@ -774,40 +798,6 @@
       "connectionTestSuccess": "Connection test succeeded."
     }
   },
-  "authenticationManagement": {
-    "title": "Authentication",
-    "ldap": {
-      "title": "LDAP",
-      "description": "Enable LDAP username/password login and sync groups into RBAC.",
-      "form": {
-        "serverUrl": "Server URL",
-        "useStartTLS": "Use StartTLS",
-        "useStartTLSHint": "Enable StartTLS when using ldap:// endpoints.",
-        "bindDn": "Bind DN",
-        "bindPassword": "Bind Password",
-        "bindPasswordPlaceholder": "Leave empty to keep current bind password",
-        "userBaseDn": "User Base DN",
-        "userFilter": "User Filter",
-        "usernameAttribute": "Username Attribute",
-        "displayNameAttribute": "Display Name Attribute",
-        "groupBaseDn": "Group Base DN",
-        "groupFilter": "Group Filter",
-        "groupNameAttribute": "Group Name Attribute"
-      }
-    },
-    "errors": {
-      "serverUrlRequired": "LDAP server URL is required",
-      "bindDnRequired": "LDAP bind DN is required",
-      "bindPasswordRequired": "LDAP bind password is required",
-      "userBaseDnRequired": "LDAP user base DN is required",
-      "groupBaseDnRequired": "LDAP group base DN is required",
-      "userFilterPlaceholder": "LDAP user filter must contain exactly one %s",
-      "groupFilterPlaceholder": "LDAP group filter must contain exactly one %s"
-    },
-    "messages": {
-      "updated": "Authentication settings updated"
-    }
-  },
   "settingsHint": {
     "title": "Complete Your Setup",
     "description": "Configure essential settings to get the most out of Kite",
@@ -830,7 +820,8 @@
       "testConnection": "Test Connection",
       "testingConnection": "Testing...",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "save": "Save changes"
     },
     "table": {
       "name": "Name",
@@ -946,52 +937,13 @@
       "prometheusUrl": "Prometheus URL",
       "prometheusUrlPlaceholder": "https://prometheus.example.com",
       "enabled": "Enabled",
-      "isDefault": "Set as Default"
-    }
-  },
-  "oauthManagement": {
-    "title": "OAuth Provider Management",
-    "resourceType": "OAuth provider",
-    "actions": {
-      "add": "Add Provider",
-      "edit": "Edit",
-      "delete": "Delete"
-    },
-    "table": {
-      "name": "Name",
-      "clientId": "Client ID",
-      "issuer": "Issuer",
-      "status": "Status",
-      "actions": "Actions"
-    },
-    "messages": {
-      "created": "OAuth provider created successfully",
-      "updated": "OAuth provider updated successfully",
-      "deleted": "OAuth provider deleted successfully",
-      "createError": "Failed to create OAuth provider",
-      "updateError": "Failed to update OAuth provider",
-      "deleteError": "Failed to delete OAuth provider"
-    },
-    "errors": {
-      "loadFailed": "Failed to load OAuth providers"
-    },
-    "deleteConfirmation": "This action will remove the OAuth provider configuration. Users will no longer be able to login using this provider.",
-    "dialog": {
-      "createTitle": "Add OAuth Provider",
-      "editTitle": "Edit OAuth Provider",
-      "name": "Name",
-      "namePlaceholder": "e.g., github, google",
-      "clientId": "Client ID",
-      "clientIdPlaceholder": "OAuth Client ID",
-      "clientSecret": "Client Secret",
-      "clientSecretRequired": "OAuth Client Secret",
-      "clientSecretPlaceholder": "Leave empty to keep current secret",
-      "authUrl": "Authorization URL",
-      "tokenUrl": "Token URL",
-      "userInfoUrl": "User Info URL",
-      "scopes": "Scopes",
-      "issuer": "Issuer",
-      "enabled": "Enabled"
+      "isDefault": "Set as Default",
+      "add": {
+        "title": "Add Cluster"
+      },
+      "edit": {
+        "title": "Edit Cluster"
+      }
     }
   },
   "initialization": {
@@ -1040,10 +992,6 @@
       "importSuccess": "Clusters imported successfully",
       "importError": "Failed to import clusters",
       "configRequired": "Please provide a kubeconfig file"
-    },
-    "completion": {
-      "title": "Setup Complete!",
-      "message": "You will be redirected to the dashboard shortly..."
     }
   },
   "resourceHistory": {
@@ -1076,7 +1024,10 @@
       "confirm": "Confirm rollback",
       "success": "Successfully rolled back resource",
       "error": "Failed to rollback resource"
-    }
+    },
+    "errorDetails": "Error details",
+    "noErrorMessage": "No error message available",
+    "viewError": "View error"
   },
   "pvcs": {
     "volume": "Volume",
@@ -1402,7 +1353,6 @@
       "key": "Key",
       "value": "Value",
       "timeAdded": "Time Added",
-      "type": "Type",
       "message": "Message",
       "lastTransitionTime": "Last Transition Time",
       "updatedReplicas": "Updated Replicas",
@@ -2190,8 +2140,32 @@
   "templateManagement": {
     "dialog": {
       "namePlaceholder": "e.g., Pod",
-      "descriptionPlaceholder": "e.g., A basic Pod with a single container"
-    }
+      "descriptionPlaceholder": "e.g., A basic Pod with a single container",
+      "createDescription": "Add a new resource template",
+      "createTitle": "Create Template",
+      "editTitle": "Edit Template",
+      "updateDescription": "Update the existing template"
+    },
+    "actions": {
+      "add": "Add Template"
+    },
+    "description": "Manage resource templates used when creating new resources.",
+    "empty": {
+      "description": "No templates found"
+    },
+    "errors": {
+      "required": "Name and YAML are required"
+    },
+    "hints": {
+      "nameImmutable": "The name cannot be changed after creation"
+    },
+    "messages": {
+      "created": "Template created successfully",
+      "deleted": "Template deleted successfully",
+      "updated": "Template updated successfully"
+    },
+    "resourceType": "template",
+    "title": "Templates"
   },
   "namespaceCreateDialog": {
     "title": "Create Namespace",
@@ -2199,5 +2173,8 @@
     "namePlaceholder": "For example: dev, staging, production",
     "nameHint": "Namespace names must follow Kubernetes naming rules.",
     "success": "Namespace {{name}} created successfully"
+  },
+  "log": {
+    "jumpToBottom": "Jump to bottom"
   }
 }

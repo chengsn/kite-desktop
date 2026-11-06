@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

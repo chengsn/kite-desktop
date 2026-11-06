@@ -16,7 +16,6 @@ import {
 } from '@tanstack/react-table'
 import {
   Box,
-  Database,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -29,13 +28,13 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { ResourceType } from '@/types/api'
+import { deleteResource, useResources, useResourcesWatch } from '@/lib/api'
 import {
   loadResourceTablePreference,
   loadWorkspacePreference,
   updateResourceTablePreference,
   updateWorkspacePreference,
 } from '@/lib/desktop-preferences'
-import { deleteResource, useResources, useResourcesWatch } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -68,12 +67,14 @@ import { Toggle } from '@/components/ui/toggle'
 
 import { ErrorMessage } from './error-message'
 import { HoverActionDropdownMenu } from './hover-action-dropdown-menu'
+import { EmptyState, TableSkeleton } from './resource-state'
 import { ResourceTableView } from './resource-table-view'
 import {
   RowContextMenuItem,
   RowDropdownMenuContentRenderer,
 } from './row-context-menu'
 import { NamespaceSelector } from './selector/namespace-selector'
+import { TableFiltersPopover } from './table-filters-popover'
 
 export interface ResourceTableProps<T> {
   resourceName: string
@@ -219,16 +220,20 @@ export function ResourceTable<T>({
       }
 
       try {
-        const [workspacePreference, resourceTablePreference] = await Promise.all([
-          loadWorkspacePreference(),
-          loadResourceTablePreference(),
-        ])
+        const [workspacePreference, resourceTablePreference] =
+          await Promise.all([
+            loadWorkspacePreference(),
+            loadResourceTablePreference(),
+          ])
 
         if (cancelled) {
           return
         }
 
-        if (!clusterScope && workspacePreference.selectedNamespaceByCluster[currentCluster]) {
+        if (
+          !clusterScope &&
+          workspacePreference.selectedNamespaceByCluster[currentCluster]
+        ) {
           setSelectedNamespace(
             workspacePreference.selectedNamespaceByCluster[currentCluster]
           )
@@ -305,7 +310,10 @@ export function ResourceTable<T>({
         },
       },
     })).catch((error) => {
-      console.error('Failed to save resource table preferences to storage:', error)
+      console.error(
+        'Failed to save resource table preferences to storage:',
+        error
+      )
     })
   }, [columnVisibility, resourceName])
 
@@ -347,7 +355,10 @@ export function ResourceTable<T>({
               [currentCluster]: value,
             },
           })).catch((error) => {
-            console.error('Failed to save workspace preference to storage:', error)
+            console.error(
+              'Failed to save workspace preference to storage:',
+              error
+            )
           })
         }
         // Reset pagination and search when changing namespace
@@ -647,37 +658,11 @@ export function ResourceTable<T>({
     return Boolean(searchQuery) || columnFilters.length > 0
   }, [searchQuery, columnFilters])
 
-  const filterableColumns = table.getAllColumns().filter((column) => {
-    const columnDef = column.columnDef as ColumnDef<T> & {
-      enableColumnFilter?: boolean
-    }
-    return columnDef.enableColumnFilter && column.getCanFilter()
-  })
-
   // Render empty state based on condition
   const renderEmptyState = () => {
     // Only show loading state if there's no existing data
     if (isLoading && (!data || (data as T[]).length === 0)) {
-      return (
-        <div className="h-72 flex flex-col items-center justify-center">
-          <div className="mb-4 bg-muted/30 p-6 rounded-full">
-            <Database className="h-12 w-12 text-muted-foreground animate-pulse" />
-          </div>
-          <h3 className="text-lg font-medium mb-1">
-            {t('resourceTable.loadingResources', 'Loading resources...')}
-          </h3>
-          <p className="text-muted-foreground">
-            {t('resourceTable.retrievingData', 'Retrieving data')}
-            {!clusterScope && selectedNamespace
-              ? ` ${
-                  selectedNamespace === '_all'
-                    ? t('selector.allNamespaces')
-                    : selectedNamespace
-                }`
-              : ''}
-          </p>
-        </div>
-      )
+      return <TableSkeleton rows={8} columns={6} />
     }
 
     if (isError) {
@@ -692,15 +677,11 @@ export function ResourceTable<T>({
 
     if (data && (data as T[]).length === 0) {
       return (
-        <div className="h-72 flex flex-col items-center justify-center">
-          <div className="mb-4 bg-muted/30 p-6 rounded-full">
-            <Box className="h-12 w-12 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-medium mb-1">
-            {t('resourceTable.noResourcesFound', 'No resources found')}
-          </h3>
-          <p className="text-muted-foreground">
-            {searchQuery
+        <EmptyState
+          icon={Box}
+          title={t('resourceTable.noResourcesFound', 'No resources found')}
+          description={
+            searchQuery
               ? t('resourceTable.noResultsMatch', {
                   query: searchQuery,
                   defaultValue: `No results match your search query: "${searchQuery}"`,
@@ -713,18 +694,16 @@ export function ResourceTable<T>({
                 : t('resourceTable.noneInNamespace', {
                     namespace: selectedNamespace,
                     defaultValue: `There are no resources in the ${selectedNamespace} namespace`,
-                  })}
-          </p>
-          {searchQuery && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => setSearchQuery('')}
-            >
-              {t('resourceTable.clearSearch', 'Clear Search')}
-            </Button>
-          )}
-        </div>
+                  })
+          }
+          action={
+            searchQuery ? (
+              <Button variant="outline" onClick={() => setSearchQuery('')}>
+                {t('resourceTable.clearSearch', 'Clear Search')}
+              </Button>
+            ) : undefined
+          }
+        />
       )
     }
 
@@ -763,8 +742,8 @@ export function ResourceTable<T>({
                 <span
                   className={cn(
                     'bg-muted-foreground/25 size-2 rounded-full',
-                    useSSE && isConnected && 'bg-emerald-500',
-                    useSSE && !isConnected && 'bg-red-500'
+                    useSSE && isConnected && 'bg-success',
+                    useSSE && !isConnected && 'bg-destructive'
                   )}
                 />
                 <span>{t('resourceTable.watch')}</span>
@@ -803,56 +782,7 @@ export function ResourceTable<T>({
                 showAll={true}
               />
             )}
-            {filterableColumns.map((column) => {
-              const columnDef = column.columnDef as ColumnDef<T> & {
-                enableColumnFilter?: boolean
-              }
-              const uniqueValues = column.getFacetedUniqueValues()
-              const rawFilterValue = column.getFilterValue()
-              const filterValue =
-                Array.isArray(rawFilterValue) && rawFilterValue.length === 1
-                  ? (rawFilterValue[0] as string)
-                  : ''
-
-              return (
-                <Select
-                  key={column.id}
-                  value={filterValue}
-                  onValueChange={(value) =>
-                    column.setFilterValue(value === 'all' ? undefined : [value])
-                  }
-                >
-                  <SelectTrigger className="w-full sm:w-auto sm:min-w-[8.5rem] sm:max-w-[12rem]">
-                    <SelectValue
-                      placeholder={t('resourceTable.filterColumn', {
-                        column:
-                          typeof columnDef.header === 'string'
-                            ? columnDef.header
-                            : t('common.filter'),
-                        defaultValue: `Filter ${typeof columnDef.header === 'string' ? columnDef.header : 'Column'}`,
-                      })}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      {t('common.all')}{' '}
-                      {typeof columnDef.header === 'string'
-                        ? columnDef.header
-                        : t('resourceTable.values', 'Values')}
-                    </SelectItem>
-                    {Array.from(uniqueValues.keys())
-                      .sort()
-                      .map((value) =>
-                        value ? (
-                          <SelectItem key={String(value)} value={String(value)}>
-                            {String(value)} ({uniqueValues.get(value)})
-                          </SelectItem>
-                        ) : null
-                      )}
-                  </SelectContent>
-                </Select>
-              )
-            })}
+            <TableFiltersPopover table={table} />
           </div>
 
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">

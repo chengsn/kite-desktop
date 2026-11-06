@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { usePageTitle } from '@/hooks/use-page-title'
 import { ResponsiveTabs } from '@/components/ui/responsive-tabs'
+import { PageHeader } from '@/components/page-header'
 
 import { GatewayListPage } from './gateway-list-page'
 import { HTTPRouteListPage } from './httproute-list-page'
@@ -37,17 +38,14 @@ export function AdvancedNetworkingPage() {
 
   return (
     <div className="space-y-2">
-      <div className="mb-4">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl">{t('nav.advancedNetworking')}</h1>
-        </div>
-        <p className="text-muted-foreground">
-          {t(
-            'advancedNetworking.description',
-            'Manage network policies, gateways, and HTTP routes in one place'
-          )}
-        </p>
-      </div>
+      <PageHeader
+        className="mb-4"
+        title={t('nav.advancedNetworking')}
+        description={t(
+          'advancedNetworking.description',
+          'Manage network policies, gateways, and HTTP routes in one place'
+        )}
+      />
 
       <ResponsiveTabs tabs={tabs} />
     </div>

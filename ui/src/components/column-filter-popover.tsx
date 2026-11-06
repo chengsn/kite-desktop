@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { isFilterableColumn } from '@/components/column-filter-utils'
 
 interface ColumnFilterPopoverProps<TData> {
   column: Column<TData, unknown>
@@ -24,19 +25,11 @@ export function ColumnFilterPopover<TData>({
   const [search, setSearch] = useState('')
 
   const filterValue = column.getFilterValue()
-  const hasActiveFilter =
-    Array.isArray(filterValue) ? filterValue.length > 0 : false
+  const hasActiveFilter = Array.isArray(filterValue)
+    ? filterValue.length > 0
+    : false
 
-  // Skip columns whose values are all objects (not suitable for filtering)
-  const facetedValues = column.getFacetedUniqueValues()
-  const allObjects = useMemo(() => {
-    if (facetedValues.size === 0) return true
-    return Array.from(facetedValues.keys()).every(
-      (v) => v != null && typeof v === 'object'
-    )
-  }, [facetedValues])
-
-  if (allObjects) return null
+  if (!isFilterableColumn(column)) return null
 
   return (
     <Popover
@@ -86,7 +79,7 @@ export function ColumnFilterPopover<TData>({
   )
 }
 
-function FacetedFilterContent<TData>({
+export function FacetedFilterContent<TData>({
   column,
   search,
   onSearchChange,
@@ -157,14 +150,11 @@ function FacetedFilterContent<TData>({
     }
   }, [allFilteredSelected, selectedValues, filteredEntries, column])
 
-  const scrollToIndex = useCallback(
-    (index: number) => {
-      if (!listRef.current) return
-      const items = listRef.current.querySelectorAll('[data-filter-item]')
-      items[index]?.scrollIntoView({ block: 'nearest' })
-    },
-    []
-  )
+  const scrollToIndex = useCallback((index: number) => {
+    if (!listRef.current) return
+    const items = listRef.current.querySelectorAll('[data-filter-item]')
+    items[index]?.scrollIntoView({ block: 'nearest' })
+  }, [])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -191,7 +181,14 @@ function FacetedFilterContent<TData>({
         }
       }
     },
-    [totalItems, highlightIndex, handleSelectAll, handleToggle, filteredEntries, scrollToIndex]
+    [
+      totalItems,
+      highlightIndex,
+      handleSelectAll,
+      handleToggle,
+      filteredEntries,
+      scrollToIndex,
+    ]
   )
 
   const handleSearchChange = useCallback(
@@ -245,7 +242,9 @@ function FacetedFilterContent<TData>({
             data-filter-item
             className={cn(
               'flex items-center gap-1.5 px-1 py-0.5 cursor-pointer text-xs rounded',
-              highlightIndex === filteredEntries.length ? 'bg-accent' : 'hover:bg-accent'
+              highlightIndex === filteredEntries.length
+                ? 'bg-accent'
+                : 'hover:bg-accent'
             )}
           >
             <Checkbox

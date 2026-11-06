@@ -98,7 +98,6 @@ export function ResourceCharts(props: ResourceChartsProps) {
         const requestIsHigh = resource.requestPercentage > 90
         const requestIsMedium = resource.requestPercentage > 60
         const limitIsHigh = resource.limitPercentage > 90
-        const limitIsMedium = resource.limitPercentage > 60
 
         return (
           <Card key={resource.name}>
@@ -118,7 +117,7 @@ export function ResourceCharts(props: ResourceChartsProps) {
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span className="font-medium text-blue-600">
+                      <span className="font-medium text-info">
                         {t('monitoring.requests')}
                       </span>
                       <span>
@@ -129,10 +128,10 @@ export function ResourceCharts(props: ResourceChartsProps) {
                       <div
                         className={`h-2 rounded-full transition-all duration-300 ${
                           requestIsHigh
-                            ? 'bg-red-500'
+                            ? 'bg-destructive'
                             : requestIsMedium
-                              ? 'bg-yellow-500'
-                              : 'bg-blue-500'
+                              ? 'bg-warning'
+                              : 'bg-info'
                         }`}
                         style={{
                           width: `${Math.min(resource.requestPercentage, 100)}%`,
@@ -148,7 +147,7 @@ export function ResourceCharts(props: ResourceChartsProps) {
 
                   <div>
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                      <span className="font-medium text-orange-600">
+                      <span className="font-medium text-warning">
                         {t('monitoring.limits')}
                       </span>
                       <span>
@@ -158,11 +157,7 @@ export function ResourceCharts(props: ResourceChartsProps) {
                     <div className="w-full bg-muted rounded-full h-2">
                       <div
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          limitIsHigh
-                            ? 'bg-red-500'
-                            : limitIsMedium
-                              ? 'bg-yellow-500'
-                              : 'bg-orange-500'
+                          limitIsHigh ? 'bg-destructive' : 'bg-warning'
                         }`}
                         style={{
                           width: `${Math.min(resource.limitPercentage, 100)}%`,

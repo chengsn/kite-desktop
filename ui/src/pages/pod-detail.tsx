@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   IconAdjustments,
   IconExternalLink,
-  IconLoader,
   IconTrash,
 } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
@@ -29,12 +28,7 @@ import {
 import { useCluster } from '@/hooks/use-cluster'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -53,12 +47,14 @@ import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LogViewer } from '@/components/log-viewer'
 import { OpenPodTerminalButton } from '@/components/open-pod-terminal-button'
+import { PageHeader } from '@/components/page-header'
 import { PodFileBrowser } from '@/components/pod-file-browser'
 import { PodMonitoring } from '@/components/pod-monitoring'
 import { PodStatusIcon } from '@/components/pod-status-icon'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
+import { DetailSkeleton } from '@/components/resource-state'
 import { ContainerSelector } from '@/components/selector/container-selector'
 import { VolumeTable } from '@/components/volume-table'
 import { YamlEditor } from '@/components/yaml-editor'
@@ -261,22 +257,7 @@ export function PodDetail(props: { namespace: string; name: string }) {
     resizeSupported && (pod?.spec?.containers?.length ?? 0) > 0
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', {
-                  resource: t('resourceKind.pod'),
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isError || !pod) {
@@ -292,52 +273,49 @@ export function PodDetail(props: { namespace: string; name: string }) {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{name}</h1>
-          <p className="text-muted-foreground">
-            {t('detail.fields.namespace')}:{' '}
-            <span className="font-medium">{namespace}</span>
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
+      <PageHeader
+        title={name}
+        description={
+          <>
+            <p className="text-muted-foreground">
+              {t('detail.fields.namespace')}:{' '}
+              <span className="font-medium">{namespace}</span>
+            </p>
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog resourceType="pods" namespace={namespace} name={name} />
+        <OpenPodTerminalButton
+          namespace={namespace}
+          pod={pod}
+          source={`pod/${name}`}
+        />
+        {resizeAvailable && (
+          <Button
             variant="outline"
             size="sm"
-            onClick={handleManualRefresh}
+            onClick={() => setIsResizeDialogOpen(true)}
           >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType="pods"
-            namespace={namespace}
-            name={name}
-          />
-          <OpenPodTerminalButton
-            namespace={namespace}
-            pod={pod}
-            source={`pod/${name}`}
-          />
-          {resizeAvailable && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsResizeDialogOpen(true)}
-            >
-              <IconAdjustments className="w-4 h-4" />
-              {t('pods.resizeResources')}
-            </Button>
-          )}
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
+            <IconAdjustments className="w-4 h-4" />
+            {t('pods.resizeResources')}
           </Button>
-        </div>
-      </div>
+        )}
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[
@@ -364,7 +342,7 @@ export function PodDetail(props: { namespace: string; name: string }) {
                           <span>{translatePodStatus(podStatus.reason, t)}</span>
                         </div>
                         {getPodErrorMessage(pod) ? (
-                          <p className="mt-1 text-xs text-red-500">
+                          <p className="mt-1 text-xs text-destructive">
                             {getPodErrorMessage(pod)}
                           </p>
                         ) : null}

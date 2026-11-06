@@ -84,6 +84,9 @@ jobs:
       - name: UI lint
         run: pnpm --dir ui run lint
 
+      - name: UI i18n keys
+        run: pnpm --dir ui run i18n:check
+
       - name: UI build
         run: pnpm --dir ui run build
 

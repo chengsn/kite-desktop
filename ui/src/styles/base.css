@@ -82,6 +82,12 @@ samp {
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -153,9 +159,41 @@ body[data-scroll-locked] .width-before-scroll-bar {
 }
 
 @layer utilities {
+  .app-scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(
+        in oklab,
+        var(--color-foreground) 18%,
+        transparent
+      )
+      transparent;
+  }
+
+  .app-scroll-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .app-scroll-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .app-scroll-thin::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--color-foreground) 18%, transparent);
+  }
+
+  .app-scroll-thin::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--color-foreground) 30%, transparent);
+  }
+
   .table-scroll-thin {
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklab, var(--color-foreground) 22%, transparent)
+    scrollbar-color: color-mix(
+        in oklab,
+        var(--color-foreground) 22%,
+        transparent
+      )
       transparent;
   }
 

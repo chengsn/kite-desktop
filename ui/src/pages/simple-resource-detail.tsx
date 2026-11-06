@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { IconLoader, IconTrash } from '@tabler/icons-react'
+import { IconTrash } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -18,10 +18,12 @@ import { DescribeDialog } from '@/components/describe-dialog'
 import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LabelsAnno } from '@/components/lables-anno'
+import { PageHeader } from '@/components/page-header'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { YamlEditor } from '@/components/yaml-editor'
 
 export function SimpleResourceDetail<T extends ResourceType>(props: {
@@ -36,9 +38,6 @@ export function SimpleResourceDetail<T extends ResourceType>(props: {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const { t } = useTranslation()
-  const resourceLabel = t(`resourceKind.${resourceType.slice(0, -1)}`, {
-    defaultValue: resourceType.slice(0, -1),
-  })
 
   const {
     data,
@@ -88,20 +87,7 @@ export function SimpleResourceDetail<T extends ResourceType>(props: {
   }
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', { resource: resourceLabel })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isError || !data) {
@@ -117,39 +103,40 @@ export function SimpleResourceDetail<T extends ResourceType>(props: {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{name}</h1>
-          {namespace && (
-            <p className="text-muted-foreground">
-              {t('detail.fields.namespace')}:{' '}
-              <span className="font-medium">{namespace}</span>
-            </p>
-          )}
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-          >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType={resourceType}
-            namespace={namespace}
-            name={name}
-          />
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={name}
+        description={
+          <>
+            {namespace && (
+              <p className="text-muted-foreground">
+                {t('detail.fields.namespace')}:{' '}
+                <span className="font-medium">{namespace}</span>
+              </p>
+            )}
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType={resourceType}
+          namespace={namespace}
+          name={name}
+        />
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

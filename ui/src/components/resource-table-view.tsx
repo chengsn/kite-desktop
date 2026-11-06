@@ -4,7 +4,13 @@ import {
   PaginationState,
   Table as TableInstance,
 } from '@tanstack/react-table'
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/lib/utils'
@@ -26,6 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ColumnFilterPopover } from '@/components/column-filter-popover'
+import { EmptyState } from '@/components/resource-state'
 import {
   RowContextMenuContentRenderer,
   RowContextMenuItem,
@@ -107,7 +114,9 @@ function renderSortIcon(sortState: false | 'asc' | 'desc') {
     return <ArrowDown className="h-3.5 w-3.5" />
   }
 
-  return <ArrowUpDown className="h-3.5 w-3.5 opacity-0 group-hover/header:opacity-50" />
+  return (
+    <ArrowUpDown className="h-3.5 w-3.5 opacity-0 group-hover/header:opacity-50" />
+  )
 }
 
 export function ResourceTableView<T>({
@@ -138,7 +147,7 @@ export function ResourceTableView<T>({
     cn(
       getColumnAlignmentClassName(alignment, index),
       columnId === 'actions' &&
-        'sticky right-0 z-20 bg-background shadow-[-10px_0_12px_-12px_color-mix(in_oklab,var(--color-foreground)_16%,transparent)]',
+        'sticky right-0 z-20 bg-background shadow-[-10px_0_12px_-12px_color-mix(in_oklab,var(--color-foreground)_16%,transparent)] transition-colors group-hover/row:bg-muted/50 group-data-[state=selected]/row:bg-muted',
       isHeader && columnId === 'actions' && 'z-30'
     )
 
@@ -148,8 +157,8 @@ export function ResourceTableView<T>({
     if (rows.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={columnCount} className="h-24 text-center">
-            {t('resourceTableView.noResults')}
+          <TableCell colSpan={columnCount} className="p-0 whitespace-normal">
+            <EmptyState title={t('resourceTableView.noResults')} />
           </TableCell>
         </TableRow>
       )
@@ -159,7 +168,11 @@ export function ResourceTableView<T>({
       const contextMenuItems = getRowContextMenuItems?.(row.original) ?? []
 
       const rowContent = (
-        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+        <TableRow
+          key={row.id}
+          className="group/row"
+          data-state={row.getIsSelected() && 'selected'}
+        >
           {row.getVisibleCells().map((cell, index) => (
             <TableCell
               key={cell.id}
@@ -289,7 +302,7 @@ export function ResourceTableView<T>({
               <TableHeader className="bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header, index) => (
+                    {headerGroup.headers.map((header, index) =>
                       (() => {
                         const alignment = (
                           header.column.columnDef.meta as
@@ -311,6 +324,15 @@ export function ResourceTableView<T>({
                         return (
                           <TableHead
                             key={header.id}
+                            aria-sort={
+                              canSort
+                                ? header.column.getIsSorted() === 'asc'
+                                  ? 'ascending'
+                                  : header.column.getIsSorted() === 'desc'
+                                    ? 'descending'
+                                    : 'none'
+                                : undefined
+                            }
                             className={cn(
                               'group/header',
                               getStickyColumnClassName(
@@ -349,7 +371,9 @@ export function ResourceTableView<T>({
                                     )
                                   )}
                                   {canFilter ? (
-                                    <ColumnFilterPopover column={header.column} />
+                                    <ColumnFilterPopover
+                                      column={header.column}
+                                    />
                                   ) : null}
                                 </div>
                               </div>
@@ -379,7 +403,8 @@ export function ResourceTableView<T>({
                                     )}
                                     {header.column.getIsSorted() === 'asc' ? (
                                       <ArrowUp className="ml-1 h-3.5 w-3.5" />
-                                    ) : header.column.getIsSorted() === 'desc' ? (
+                                    ) : header.column.getIsSorted() ===
+                                      'desc' ? (
                                       <ArrowDown className="ml-1 h-3.5 w-3.5" />
                                     ) : (
                                       <ArrowUpDown className="ml-1 h-3.5 w-3.5 opacity-0 group-hover/header:opacity-50" />
@@ -399,7 +424,7 @@ export function ResourceTableView<T>({
                           </TableHead>
                         )
                       })()
-                    ))}
+                    )}
                   </TableRow>
                 ))}
               </TableHeader>
@@ -480,7 +505,7 @@ export function ResourceTableView<T>({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-center text-sm font-medium">
+            <div className="flex items-center justify-center text-sm font-medium tabular-nums">
               {t('resourceTableView.pageOf', {
                 current: pagination.pageIndex + 1,
                 total: table.getPageCount() || 1,
@@ -497,7 +522,7 @@ export function ResourceTableView<T>({
                 <span className="sr-only">
                   {t('resourceTableView.previousPage')}
                 </span>
-                ←
+                <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
@@ -509,7 +534,7 @@ export function ResourceTableView<T>({
                 <span className="sr-only">
                   {t('resourceTableView.nextPage')}
                 </span>
-                →
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>

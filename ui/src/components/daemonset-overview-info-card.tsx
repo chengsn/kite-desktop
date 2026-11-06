@@ -78,18 +78,18 @@ function StatusIcon(props: { status: DaemonSetOverviewViewModel['status'] }) {
   const { status } = props
 
   if (status === 'Available') {
-    return <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+    return <CheckCircle2 className="h-4 w-4 text-success" />
   }
 
   if (status === 'Pending') {
-    return <Radar className="h-4 w-4 text-sky-600" />
+    return <Radar className="h-4 w-4 text-info" />
   }
 
   if (status === 'Progressing') {
-    return <Clock3 className="h-4 w-4 text-amber-600" />
+    return <Clock3 className="h-4 w-4 text-warning" />
   }
 
-  return <AlertCircle className="h-4 w-4 text-rose-600" />
+  return <AlertCircle className="h-4 w-4 text-destructive" />
 }
 
 function formatRollingUpdateValue(value: string | number | undefined) {
@@ -142,7 +142,7 @@ export function DaemonSetOverviewInfoCard(props: {
         </div>
 
         {!overview.isObserved ? (
-          <div className="rounded-lg border border-amber-300/60 bg-amber-50/70 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-100">
+          <div className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
             {t('daemonSetOverview.rolloutPendingDescription', {
               observed: overview.observedGeneration ?? 0,
               generation: overview.generation ?? 0,

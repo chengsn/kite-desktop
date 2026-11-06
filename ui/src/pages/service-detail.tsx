@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
-import { IconExternalLink, IconLoader, IconTrash } from '@tabler/icons-react'
+import { IconExternalLink, IconTrash } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
-import {
-  EndpointPort,
-  Endpoints,
-  Pod,
-  Service,
-} from 'kubernetes-types/core/v1'
+import { EndpointPort, Endpoints, Pod, Service } from 'kubernetes-types/core/v1'
 import {
   EndpointSlice,
   EndpointPort as SliceEndpointPort,
@@ -39,10 +34,12 @@ import { DescribeDialog } from '@/components/describe-dialog'
 import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LabelsAnno } from '@/components/lables-anno'
+import { PageHeader } from '@/components/page-header'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { YamlEditor } from '@/components/yaml-editor'
 
 function formatPortValue(value?: string | number) {
@@ -60,7 +57,9 @@ function formatSelector(selector?: Record<string, string>) {
 }
 
 function formatEndpointPort(port: EndpointPort) {
-  return [port.name, port.port, port.protocol || 'TCP'].filter(Boolean).join(' ')
+  return [port.name, port.port, port.protocol || 'TCP']
+    .filter(Boolean)
+    .join(' ')
 }
 
 function formatSliceEndpointPort(port: SliceEndpointPort) {
@@ -70,7 +69,9 @@ function formatSliceEndpointPort(port: SliceEndpointPort) {
 }
 
 function getPodImages(pod: Pod) {
-  const images = pod.spec?.containers?.map((container) => container.image || '-')
+  const images = pod.spec?.containers?.map(
+    (container) => container.image || '-'
+  )
   return images?.map(toCompactImageName).join(', ') || '-'
 }
 
@@ -140,7 +141,9 @@ function PodAssociationTable({
               <TableCell className="max-w-[260px] truncate font-mono text-xs text-muted-foreground">
                 {formatSelector(pod.metadata?.labels) || '-'}
               </TableCell>
-              <TableCell className="font-mono">{getPodReadyText(pod)}</TableCell>
+              <TableCell className="font-mono">
+                {getPodReadyText(pod)}
+              </TableCell>
               <TableCell className="max-w-[420px] truncate font-mono text-xs">
                 {getPodImages(pod)}
               </TableCell>
@@ -168,12 +171,16 @@ function ServiceAssociationsOverview({
   const { data: endpoints } = useResource('endpoints', serviceName, namespace, {
     staleTime: 1000,
   })
-  const { data: endpointSlices = [] } = useResources('endpointslices', namespace, {
-    labelSelector: serviceName
-      ? `kubernetes.io/service-name=${serviceName}`
-      : undefined,
-    disable: !namespace || !serviceName,
-  })
+  const { data: endpointSlices = [] } = useResources(
+    'endpointslices',
+    namespace,
+    {
+      labelSelector: serviceName
+        ? `kubernetes.io/service-name=${serviceName}`
+        : undefined,
+      disable: !namespace || !serviceName,
+    }
+  )
   const { data: pods = [] } = useResources('pods', namespace, {
     labelSelector: selector || undefined,
     disable: !namespace || !selector,
@@ -203,7 +210,9 @@ function ServiceAssociationsOverview({
               endpointRows.map((row) => (
                 <TableRow key={row.key}>
                   <TableCell className="font-mono">{row.ip}</TableCell>
-                  <TableCell className="font-mono text-xs">{row.ports}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {row.ports}
+                  </TableCell>
                   <TableCell>{row.nodeName}</TableCell>
                   <TableCell>
                     {row.targetKind === 'Pod' && row.targetName !== '-' ? (
@@ -241,26 +250,25 @@ function getEndpointRows(
   endpoints: Endpoints | undefined,
   endpointSlices: EndpointSlice[]
 ) {
-  const endpointRows =
-    endpoints?.subsets?.flatMap((subset, subsetIndex) =>
-      [
-        ...(subset.addresses || []).map((address) => ({
-          address,
-          ready: true,
-        })),
-        ...(subset.notReadyAddresses || []).map((address) => ({
-          address,
-          ready: false,
-        })),
-      ].map(({ address, ready }, addressIndex) => ({
-        key: `endpoints-${endpoints.metadata?.uid || endpoints.metadata?.name}-${subsetIndex}-${addressIndex}-${ready ? 'ready' : 'not-ready'}`,
-        ip: address.ip,
-        nodeName: address.nodeName || '-',
-        targetName: address.targetRef?.name || '-',
-        targetKind: address.targetRef?.kind || '',
-        ports: (subset.ports || []).map(formatEndpointPort).join(', ') || '-',
-      }))
-    )
+  const endpointRows = endpoints?.subsets?.flatMap((subset, subsetIndex) =>
+    [
+      ...(subset.addresses || []).map((address) => ({
+        address,
+        ready: true,
+      })),
+      ...(subset.notReadyAddresses || []).map((address) => ({
+        address,
+        ready: false,
+      })),
+    ].map(({ address, ready }, addressIndex) => ({
+      key: `endpoints-${endpoints.metadata?.uid || endpoints.metadata?.name}-${subsetIndex}-${addressIndex}-${ready ? 'ready' : 'not-ready'}`,
+      ip: address.ip,
+      nodeName: address.nodeName || '-',
+      targetName: address.targetRef?.name || '-',
+      targetKind: address.targetRef?.kind || '',
+      ports: (subset.ports || []).map(formatEndpointPort).join(', ') || '-',
+    }))
+  )
 
   if (endpointRows?.length) {
     return endpointRows
@@ -274,7 +282,8 @@ function getEndpointRows(
         nodeName: endpoint.nodeName || '-',
         targetName: endpoint.targetRef?.name || '-',
         targetKind: endpoint.targetRef?.kind || '',
-        ports: (slice.ports || []).map(formatSliceEndpointPort).join(', ') || '-',
+        ports:
+          (slice.ports || []).map(formatSliceEndpointPort).join(', ') || '-',
       }))
     )
   )
@@ -436,22 +445,7 @@ export function ServiceDetail(props: { name: string; namespace?: string }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', {
-                  resource: t('resourceKind.service'),
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isError || !data) {
@@ -467,39 +461,40 @@ export function ServiceDetail(props: { name: string; namespace?: string }) {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{name}</h1>
-          {namespace && (
-            <p className="text-muted-foreground">
-              {t('detail.fields.namespace')}:{' '}
-              <span className="font-medium">{namespace}</span>
-            </p>
-          )}
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-          >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType={'services' as ResourceType}
-            namespace={namespace}
-            name={name}
-          />
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={name}
+        description={
+          <>
+            {namespace && (
+              <p className="text-muted-foreground">
+                {t('detail.fields.namespace')}:{' '}
+                <span className="font-medium">{namespace}</span>
+              </p>
+            )}
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType={'services' as ResourceType}
+          namespace={namespace}
+          name={name}
+        />
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

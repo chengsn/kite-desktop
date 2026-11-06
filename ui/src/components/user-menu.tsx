@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { useVersionInfo } from '@/lib/api'
 import { openConfigDir, openLogsDir } from '@/lib/desktop'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ export function UserMenu() {
   const { colorTheme, setColorTheme, font, setFont } = useAppearance()
   const [open, setOpen] = useState(false)
   const { t } = useTranslation()
+  const { data: versionInfo } = useVersionInfo()
 
   const handleOpenConfigDir = () => {
     void openConfigDir().catch((error) => {
@@ -69,7 +71,9 @@ export function UserMenu() {
         <div className="px-2 py-1.5">
           <p className="font-medium">{t('app.name', 'Kite')}</p>
           <p className="text-xs text-muted-foreground">
-            {t('settings.tabs.desktop', 'Desktop')}
+            {versionInfo?.version
+              ? `v${versionInfo.version}`
+              : t('app.tagline', 'Kubernetes desktop client')}
           </p>
         </div>
 

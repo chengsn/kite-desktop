@@ -25,14 +25,14 @@ import { UpdateDownloadToast } from './components/update-download-toast'
 import { AIChatProvider } from './contexts/ai-chat-context'
 import { ClusterProvider } from './contexts/cluster-context'
 import { NavigationProvider } from './contexts/navigation-context'
+import { useRuntime } from './contexts/runtime-context'
 import { TerminalProvider, useTerminal } from './contexts/terminal-context'
 import { useCluster } from './hooks/use-cluster'
-import { apiClient } from './lib/api-client'
 import { installAnalyticsErrorTracking, trackPage } from './lib/analytics'
 import { getAnalyticsPageKey } from './lib/analytics-route'
+import { apiClient } from './lib/api-client'
 import { getClusterSwitchRedirectPath } from './lib/cluster-switch-navigation'
 import { prefetchMonaco } from './lib/monaco-runtime'
-import { useRuntime } from './contexts/runtime-context'
 import { cn } from './lib/utils'
 
 const FloatingTerminal = lazy(async () => {
@@ -75,7 +75,7 @@ function ClusterGate({ children }: { children: ReactNode }) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex items-center space-x-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-info" />
           <span>{t('cluster.loading')}</span>
         </div>
       </div>
@@ -85,7 +85,7 @@ function ClusterGate({ children }: { children: ReactNode }) {
   if (error) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-red-500">
+        <div className="text-destructive">
           <p>{t('cluster.error', { error: error.message })}</p>
         </div>
       </div>
@@ -129,7 +129,7 @@ function AppContent() {
           )}
         >
           <SiteHeader />
-          <div className="@container/main flex flex-1 min-h-0 flex-col overflow-y-auto scrollbar-hide">
+          <div className="@container/main app-scroll-thin flex min-h-0 flex-1 flex-col overflow-y-auto">
             <div className="flex min-h-0 flex-1 flex-col gap-2 py-2 md:gap-3">
               <div className="pl-2.5 pr-2.5">
                 <Outlet />

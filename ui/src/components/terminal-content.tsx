@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { createPortal } from 'react-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   IconClearAll,
   IconFolder,
@@ -19,6 +12,7 @@ import { SearchAddon } from '@xterm/addon-search'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { Terminal as XTerm } from '@xterm/xterm'
 import { Container, Pod } from 'kubernetes-types/core/v1'
+import { createPortal } from 'react-dom'
 
 import '@xterm/xterm/css/xterm.css'
 
@@ -490,7 +484,8 @@ export function Terminal({
 
     // WebSocket connection
     setIsConnected(false)
-    const currentCluster = clusterName ?? localStorage.getItem('current-cluster')
+    const currentCluster =
+      clusterName ?? localStorage.getItem('current-cluster')
     const wsPath =
       type === 'pod'
         ? appendClusterNameParam(
@@ -504,7 +499,10 @@ export function Terminal({
               `/api/v1/node-terminal/${nodeName}/ws`,
               currentCluster
             )
-          : appendClusterNameParam('/api/v1/kubectl-terminal/ws', currentCluster)
+          : appendClusterNameParam(
+              '/api/v1/kubectl-terminal/ws',
+              currentCluster
+            )
     const wsUrl = getWebSocketUrl(wsPath)
     const websocket = new WebSocket(wsUrl)
     wsRef.current = websocket
@@ -770,7 +768,7 @@ export function Terminal({
                       >
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-3 h-3 rounded-full border border-gray-400"
+                            className="w-3 h-3 rounded-full border border-border"
                             style={{
                               backgroundColor: theme.background,
                             }}
@@ -802,15 +800,21 @@ export function Terminal({
                   </span>{' '}
                   ls -la
                 </div>
-                <div style={{ color: TERMINAL_THEMES[visibleTerminalTheme].blue }}>
+                <div
+                  style={{ color: TERMINAL_THEMES[visibleTerminalTheme].blue }}
+                >
                   drwxr-xr-x 3 user user 4096 Dec 9 10:30 .
                 </div>
                 <div
-                  style={{ color: TERMINAL_THEMES[visibleTerminalTheme].yellow }}
+                  style={{
+                    color: TERMINAL_THEMES[visibleTerminalTheme].yellow,
+                  }}
                 >
                   -rw-r--r-- 1 user user 220 Dec 9 10:30 README.md
                 </div>
-                <div style={{ color: TERMINAL_THEMES[visibleTerminalTheme].red }}>
+                <div
+                  style={{ color: TERMINAL_THEMES[visibleTerminalTheme].red }}
+                >
                   -rwx------ 1 user user 1024 Dec 9 10:30 script.sh
                 </div>
                 <div className="flex items-center gap-1 opacity-80">

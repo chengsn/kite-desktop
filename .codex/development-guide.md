@@ -101,6 +101,7 @@
   - `go test ./...`
 - UI 改动：
   - `pnpm --dir ui run test`
+  - 涉及文案时：`pnpm --dir ui run i18n:check`
 - 混合改动：
   - `make test`
 

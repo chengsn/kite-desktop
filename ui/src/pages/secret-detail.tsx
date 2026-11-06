@@ -1,11 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import {
-  IconCopy,
-  IconEye,
-  IconEyeOff,
-  IconLoader,
-  IconTrash,
-} from '@tabler/icons-react'
+import { IconCopy, IconEye, IconEyeOff, IconTrash } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
 import { Secret } from 'kubernetes-types/core/v1'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
@@ -40,10 +34,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LabelsAnno } from '@/components/lables-anno'
+import { PageHeader } from '@/components/page-header'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { YamlEditor } from '@/components/yaml-editor'
 
 type SecretDataItem = {
@@ -489,12 +485,9 @@ export function SecretDetail(props: { namespace: string; name: string }) {
     return yaml.dump(showSecret, { indent: 2 })
   }
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center p-8">
-        <IconLoader className="h-6 w-6 animate-spin" />
-      </div>
-    )
+  if (isLoading) {
+    return <DetailSkeleton className="p-6" />
+  }
 
   if (isError) {
     return (
@@ -525,32 +518,33 @@ export function SecretDetail(props: { namespace: string; name: string }) {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{secret.metadata!.name}</h1>
-          <p className="text-muted-foreground">
-            {t('detail.fields.namespace')}:{' '}
-            <span className="font-medium">{secret.metadata!.namespace}</span>
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton
-            variant="outline"
-            size="sm"
-            onClick={handleManualRefresh}
-          >
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={secret.metadata!.name}
+        description={
+          <>
+            <p className="text-muted-foreground">
+              {t('detail.fields.namespace')}:{' '}
+              <span className="font-medium">{secret.metadata!.namespace}</span>
+            </p>
+          </>
+        }
+      >
+        <RefreshButton
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+        >
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

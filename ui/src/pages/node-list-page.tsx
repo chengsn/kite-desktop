@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useTerminal } from '@/contexts/terminal-context'
 import { useQueryClient } from '@tanstack/react-query'
 import { createColumnHelper } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
@@ -14,7 +15,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { useTerminal } from '@/contexts/terminal-context'
 import { NodeWithMetrics } from '@/types/api'
 import { trackResourceAction } from '@/lib/analytics'
 import { cordonNode, drainNode, uncordonNode } from '@/lib/api'
@@ -45,10 +45,10 @@ function NodePodsUsageCell({ node }: { node: NodeWithMetrics }) {
     podsLimit > 0 ? Math.min((podsUsed / podsLimit) * 100, 100) : 0
   const progressClassName =
     percentage >= 85
-      ? 'bg-gradient-to-r from-orange-500 via-red-500 to-rose-500'
+      ? 'bg-gradient-to-r from-destructive to-destructive/70'
       : percentage >= 60
-        ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-orange-500'
-        : 'bg-gradient-to-r from-sky-500 via-cyan-500 to-emerald-500'
+        ? 'bg-gradient-to-r from-warning to-warning/70'
+        : 'bg-gradient-to-r from-info to-info/70'
 
   return (
     <Link
@@ -414,17 +414,20 @@ export function NodeListPage() {
     await queryClient.invalidateQueries({ queryKey: ['nodes'] })
   }, [queryClient])
 
-  const handleOpenNodeTerminal = useCallback((node: NodeWithMetrics) => {
-    const nodeName = node.metadata?.name
-    if (!nodeName) return
-    openSession({
-      type: 'node',
-      nodeName,
-      title: nodeName,
-      source: `node/${nodeName}`,
-      entry: 'node-list',
-    })
-  }, [openSession])
+  const handleOpenNodeTerminal = useCallback(
+    (node: NodeWithMetrics) => {
+      const nodeName = node.metadata?.name
+      if (!nodeName) return
+      openSession({
+        type: 'node',
+        nodeName,
+        title: nodeName,
+        source: `node/${nodeName}`,
+        entry: 'node-list',
+      })
+    },
+    [openSession]
+  )
 
   const handleCordon = useCallback(async () => {
     if (!cordonNodeTarget?.metadata?.name) {

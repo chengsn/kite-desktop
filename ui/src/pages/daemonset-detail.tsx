@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IconLoader, IconReload, IconTrash } from '@tabler/icons-react'
+import { IconReload, IconTrash } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
 import { DaemonSet } from 'kubernetes-types/apps/v1'
 import { Container } from 'kubernetes-types/core/v1'
@@ -30,12 +30,14 @@ import { ErrorMessage } from '@/components/error-message'
 import { EventTable } from '@/components/event-table'
 import { LogViewer } from '@/components/log-viewer'
 import { OpenPodTerminalButton } from '@/components/open-pod-terminal-button'
+import { PageHeader } from '@/components/page-header'
 import { PodMonitoring } from '@/components/pod-monitoring'
 import { PodTable } from '@/components/pod-table'
 import { RefreshButton } from '@/components/refresh-button'
 import { RelatedResourcesTable } from '@/components/related-resource-table'
 import { ResourceDeleteConfirmationDialog } from '@/components/resource-delete-confirmation-dialog'
 import { ResourceHistoryTable } from '@/components/resource-history-table'
+import { DetailSkeleton } from '@/components/resource-state'
 import { VolumeTable } from '@/components/volume-table'
 import { YamlEditor } from '@/components/yaml-editor'
 
@@ -224,22 +226,7 @@ export function DaemonSetDetail(props: { namespace: string; name: string }) {
   }
 
   if (isLoadingDaemonSet) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-2">
-              <IconLoader className="animate-spin" />
-              <span>
-                {t('detail.status.loading', {
-                  resource: t('resourceKind.daemonset'),
-                })}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <DetailSkeleton className="p-6" />
   }
 
   if (isDaemonSetError || !daemonset) {
@@ -258,82 +245,83 @@ export function DaemonSetDetail(props: { namespace: string; name: string }) {
   return (
     <div className="space-y-2">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold">{metadata?.name}</h1>
-          <p className="text-muted-foreground">
-            {t('detail.fields.namespace')}:{' '}
-            <span className="font-medium">{namespace}</span>
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-          <RefreshButton variant="outline" size="sm" onClick={handleRefresh}>
-            {t('detail.buttons.refresh')}
-          </RefreshButton>
-          <DescribeDialog
-            resourceType={'daemonsets'}
-            namespace={namespace}
-            name={name}
-          />
-          <OpenPodTerminalButton
-            namespace={namespace}
-            pods={relatedPods}
-            containers={spec?.template.spec?.containers}
-            initContainers={spec?.template.spec?.initContainers}
-            source={`daemonset/${name}`}
-          />
-          <Popover
-            open={isRestartPopoverOpen}
-            onOpenChange={setIsRestartPopoverOpen}
-          >
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconReload className="w-4 h-4" />
-                {t('detail.buttons.restart')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium">
-                    {t('detail.dialogs.restartDaemonSet.title')}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t('detail.dialogs.restartDaemonSet.description')}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsRestartPopoverOpen(false)}
-                    className="flex-1"
-                  >
-                    {t('detail.buttons.cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      handleRestart()
-                      setIsRestartPopoverOpen(false)
-                    }}
-                    className="flex-1"
-                  >
-                    <IconReload className="w-4 h-4 mr-2" />
-                    {t('detail.dialogs.restartDaemonSet.restartButton')}
-                  </Button>
-                </div>
+      <PageHeader
+        title={metadata?.name}
+        description={
+          <>
+            <p className="text-muted-foreground">
+              {t('detail.fields.namespace')}:{' '}
+              <span className="font-medium">{namespace}</span>
+            </p>
+          </>
+        }
+      >
+        <RefreshButton variant="outline" size="sm" onClick={handleRefresh}>
+          {t('detail.buttons.refresh')}
+        </RefreshButton>
+        <DescribeDialog
+          resourceType={'daemonsets'}
+          namespace={namespace}
+          name={name}
+        />
+        <OpenPodTerminalButton
+          namespace={namespace}
+          pods={relatedPods}
+          containers={spec?.template.spec?.containers}
+          initContainers={spec?.template.spec?.initContainers}
+          source={`daemonset/${name}`}
+        />
+        <Popover
+          open={isRestartPopoverOpen}
+          onOpenChange={setIsRestartPopoverOpen}
+        >
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm">
+              <IconReload className="w-4 h-4" />
+              {t('detail.buttons.restart')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-medium">
+                  {t('detail.dialogs.restartDaemonSet.title')}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {t('detail.dialogs.restartDaemonSet.description')}
+                </p>
               </div>
-            </PopoverContent>
-          </Popover>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('detail.buttons.delete')}
-          </Button>
-        </div>
-      </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsRestartPopoverOpen(false)}
+                  className="flex-1"
+                >
+                  {t('detail.buttons.cancel')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleRestart()
+                    setIsRestartPopoverOpen(false)
+                  }}
+                  className="flex-1"
+                >
+                  <IconReload className="w-4 h-4 mr-2" />
+                  {t('detail.dialogs.restartDaemonSet.restartButton')}
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          <IconTrash className="w-4 h-4" />
+          {t('detail.buttons.delete')}
+        </Button>
+      </PageHeader>
 
       <ResponsiveTabs
         tabs={[

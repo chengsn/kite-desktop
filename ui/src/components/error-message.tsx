@@ -1,9 +1,9 @@
-import { RotateCcw, ShieldX, XCircle } from 'lucide-react'
+import { ShieldX, XCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { isRBACError, translateError } from '@/lib/utils'
 
-import { Button } from './ui/button'
+import { ErrorState } from './resource-state'
 
 interface ErrorMessageProps {
   resourceName: string
@@ -18,6 +18,7 @@ export function ErrorMessage({
   refetch,
   error,
   fallbackKey = 'common.error',
+  className,
 }: ErrorMessageProps) {
   const { t } = useTranslation()
 
@@ -30,26 +31,15 @@ export function ErrorMessage({
     error instanceof Error ? translateError(error, t) : t(fallbackKey)
 
   return (
-    <div className="h-72 flex flex-col items-center justify-center">
-      <div className="mb-4">
-        {isRBAC ? (
-          <ShieldX className="h-16 w-16 text-amber-500" />
-        ) : (
-          <XCircle className="h-16 w-16 text-red-500" />
-        )}
-      </div>
-      <h3
-        className={`text-lg font-medium mb-1 ${isRBAC ? 'text-amber-600' : 'text-red-500'}`}
-      >
-        {t('resourceTable.errorLoading', {
-          resourceName: resourceName.toLowerCase(),
-        })}
-      </h3>
-      <p className="text-muted-foreground mb-4">{message}</p>
-      <Button variant="outline" onClick={() => refetch()}>
-        <RotateCcw className="h-4 w-4 mr-2" />
-        {t('resourceTable.tryAgain')}
-      </Button>
-    </div>
+    <ErrorState
+      className={className}
+      icon={isRBAC ? ShieldX : XCircle}
+      title={t('resourceTable.errorLoading', {
+        resourceName: resourceName.toLowerCase(),
+      })}
+      description={message}
+      onRetry={() => refetch()}
+      retryLabel={t('resourceTable.tryAgain')}
+    />
   )
 }

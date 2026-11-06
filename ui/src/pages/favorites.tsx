@@ -8,7 +8,6 @@ import {
   IconDatabase,
   IconFileDatabase,
   IconKey,
-  IconLoader,
   IconLock,
   IconMap,
   IconNetwork,
@@ -20,9 +19,9 @@ import {
   IconServer2,
   IconShield,
   IconShieldCheck,
+  IconStack2,
   IconStar,
   IconStarFilled,
-  IconStack2,
   IconTopologyBus,
   IconUser,
   IconUsers,
@@ -31,8 +30,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import type { SearchResult } from '@/lib/api'
-import { useGlobalSearch } from '@/components/global-search-provider'
-import { NoClusterState } from '@/components/no-cluster-state'
+import { useCluster } from '@/hooks/use-cluster'
+import { useFavorites } from '@/hooks/use-favorites'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,9 +42,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCluster } from '@/hooks/use-cluster'
-import { useFavorites } from '@/hooks/use-favorites'
+import { useGlobalSearch } from '@/components/global-search-provider'
+import { NoClusterState } from '@/components/no-cluster-state'
+import { PageHeader } from '@/components/page-header'
 import { RefreshButton } from '@/components/refresh-button'
+import { EmptyState, TableSkeleton } from '@/components/resource-state'
 
 const RESOURCE_CONFIG: Record<
   string,
@@ -121,12 +122,8 @@ export function FavoritesPage() {
   const navigate = useNavigate()
   const { currentCluster } = useCluster()
   const { openSearch } = useGlobalSearch()
-  const {
-    favorites,
-    isLoading,
-    refreshFavorites,
-    removeFromFavorites,
-  } = useFavorites()
+  const { favorites, isLoading, refreshFavorites, removeFromFavorites } =
+    useFavorites()
   const [searchQuery, setSearchQuery] = useState('')
   const [resourceTypeFilter, setResourceTypeFilter] = useState('all')
   const [namespaceFilter, setNamespaceFilter] = useState('all')
@@ -143,7 +140,9 @@ export function FavoritesPage() {
   useEffect(() => {
     setPendingRemovalIds((previous) => {
       const remaining = new Set(
-        [...previous].filter((id) => favorites.some((favorite) => favorite.id === id))
+        [...previous].filter((id) =>
+          favorites.some((favorite) => favorite.id === id)
+        )
       )
 
       if (remaining.size === previous.size) {
@@ -169,12 +168,13 @@ export function FavoritesPage() {
   )
 
   const resourceTypeOptions = useMemo(() => {
-    return Array.from(new Set(sortedFavorites.map((favorite) => favorite.resourceType)))
-      .sort((left, right) => {
-        const leftLabel = t(getResourcePresentation(left).label)
-        const rightLabel = t(getResourcePresentation(right).label)
-        return leftLabel.localeCompare(rightLabel)
-      })
+    return Array.from(
+      new Set(sortedFavorites.map((favorite) => favorite.resourceType))
+    ).sort((left, right) => {
+      const leftLabel = t(getResourcePresentation(left).label)
+      const rightLabel = t(getResourcePresentation(right).label)
+      return leftLabel.localeCompare(rightLabel)
+    })
   }, [sortedFavorites, t])
 
   const namespaceOptions = useMemo(() => {
@@ -191,8 +191,9 @@ export function FavoritesPage() {
     const normalizedQuery = searchQuery.trim().toLowerCase()
 
     return sortedFavorites.filter((favorite) => {
-      const typeLabel = t(getResourcePresentation(favorite.resourceType).label)
-        .toLowerCase()
+      const typeLabel = t(
+        getResourcePresentation(favorite.resourceType).label
+      ).toLowerCase()
       const matchesQuery =
         normalizedQuery.length === 0 ||
         favorite.name.toLowerCase().includes(normalizedQuery) ||
@@ -243,21 +244,19 @@ export function FavoritesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">{t('favorites.title')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('favorites.currentCluster', { name: currentCluster })}
-          </p>
-        </div>
-        <RefreshButton
-          variant="outline"
-          onClick={() => void refreshFavorites()}
-          disabled={isLoading}
-        >
-          {t('common.refresh')}
-        </RefreshButton>
-      </div>
+      <PageHeader
+        title={t('favorites.title')}
+        description={t('favorites.currentCluster', { name: currentCluster })}
+        actions={
+          <RefreshButton
+            variant="outline"
+            onClick={() => void refreshFavorites()}
+            disabled={isLoading}
+          >
+            {t('common.refresh')}
+          </RefreshButton>
+        }
+      />
 
       <div className="rounded-xl border bg-card/70 p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -320,46 +319,31 @@ export function FavoritesPage() {
         </div>
 
         {isLoading && sortedFavorites.length === 0 ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-muted-foreground">
-            <IconLoader className="h-4 w-4 animate-spin" />
-            {t('common.loading')}
-          </div>
+          <TableSkeleton rows={4} columns={4} />
         ) : sortedFavorites.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-            <div className="rounded-full bg-muted p-4 text-muted-foreground">
-              <IconStar className="h-6 w-6" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
-                {t('favorites.emptyTitle')}
-              </h2>
-              <p className="max-w-md text-sm text-muted-foreground">
-                {t('favorites.emptyDescription')}
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => openSearch('all')}>
-              {t('favorites.openSearch')}
-            </Button>
-          </div>
-        ) : filteredFavorites.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-            <div className="rounded-full bg-muted p-4 text-muted-foreground">
-              <IconSearch className="h-6 w-6" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold">
-                {t('favorites.emptyFilteredTitle')}
-              </h2>
-              <p className="max-w-md text-sm text-muted-foreground">
-                {t('favorites.emptyFilteredDescription')}
-              </p>
-            </div>
-            {hasActiveFilters ? (
-              <Button variant="outline" onClick={clearFilters}>
-                {t('favorites.clearFilters')}
+          <EmptyState
+            icon={IconStar}
+            title={t('favorites.emptyTitle')}
+            description={t('favorites.emptyDescription')}
+            action={
+              <Button variant="outline" onClick={() => openSearch('all')}>
+                {t('favorites.openSearch')}
               </Button>
-            ) : null}
-          </div>
+            }
+          />
+        ) : filteredFavorites.length === 0 ? (
+          <EmptyState
+            icon={IconSearch}
+            title={t('favorites.emptyFilteredTitle')}
+            description={t('favorites.emptyFilteredDescription')}
+            action={
+              hasActiveFilters ? (
+                <Button variant="outline" onClick={clearFilters}>
+                  {t('favorites.clearFilters')}
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <div className="divide-y">
             {filteredFavorites.map((favorite) => {
@@ -401,7 +385,7 @@ export function FavoritesPage() {
                     aria-label={t('favorites.remove')}
                     onClick={() => void handleRemoveFavorite(favorite)}
                   >
-                    <IconStarFilled className="h-4 w-4 text-yellow-500" />
+                    <IconStarFilled className="h-4 w-4 text-warning" />
                   </Button>
                 </div>
               )

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { IconAlertCircle, IconEye, IconLoader } from '@tabler/icons-react'
+import { IconAlertCircle, IconEye } from '@tabler/icons-react'
 import * as yaml from 'js-yaml'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { applyResource, useResourceHistory } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 
 import { getResourceHistoryOperatorName } from './resource-history-table-utils'
+import { TableSkeleton } from './resource-state'
 import { Column, SimpleTable } from './simple-table'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
@@ -241,12 +242,7 @@ export function ResourceHistoryTable<T extends ResourceType>({
   )
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <IconLoader className="animate-spin mr-2" />
-        {t('resourceHistory.loadingHistory')}
-      </div>
-    )
+    return <TableSkeleton rows={5} columns={4} />
   }
 
   if (isError) {

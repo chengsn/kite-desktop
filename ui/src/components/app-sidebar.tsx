@@ -1,16 +1,17 @@
 import * as React from 'react'
 import { useMemo } from 'react'
 import Icon from '@/assets/icon.png'
-import { useSidebarConfig } from '@/contexts/sidebar-config-context'
-import { useDesktopUpdate } from '@/hooks/use-desktop-update'
 import { useRuntime } from '@/contexts/runtime-context'
-import { cn } from '@/lib/utils'
+import { useSidebarConfig } from '@/contexts/sidebar-config-context'
 import { CollapsibleContent } from '@radix-ui/react-collapsible'
 import { IconLayoutDashboard } from '@tabler/icons-react'
 import { ChevronDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 
+import { cn } from '@/lib/utils'
+import { useDesktopUpdate } from '@/hooks/use-desktop-update'
+import { Badge } from '@/components/ui/badge'
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +23,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   useSidebar,
 } from '@/components/ui/sidebar'
 
@@ -106,11 +108,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <Link
             to="/settings?tab=about"
             onClick={handleMenuItemClick}
-            aria-label={t('sidebar.newVersionAvailable', 'New version available')}
+            aria-label={t(
+              'sidebar.newVersionAvailable',
+              'New version available'
+            )}
             title={t('sidebar.newVersionAvailable', 'New version available')}
-            className="shrink-0 italic text-[10px] font-semibold text-red-500 transition-colors hover:text-red-600 group-data-[collapsible=icon]:hidden"
+            className="shrink-0 group-data-[collapsible=icon]:hidden"
           >
-            new
+            <Badge
+              variant="outline"
+              className="h-4 border-destructive bg-destructive px-1 text-[9px] font-semibold uppercase tracking-wide text-destructive-foreground"
+            >
+              {t('sidebar.newBadge', 'New')}
+            </Badge>
           </Link>
         ) : null}
       </div>
@@ -122,15 +132,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar collapsible="icon" {...props}>
         {branding}
         <SidebarContent>
-          <div className="p-4 text-center text-muted-foreground">
-            {t('common.loading', 'Loading...')}
-          </div>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <SidebarMenuItem key={index}>
+                    <SidebarMenuSkeleton showIcon />
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
       </Sidebar>
     )
   }
 
-  const renderGroupItems = (items: typeof visibleGroups[number]['items']) => (
+  const renderGroupItems = (items: (typeof visibleGroups)[number]['items']) => (
     <SidebarMenu>
       {items.map((item) => {
         const IconComponent = getIconComponent(item.icon)
